@@ -2,7 +2,7 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 
-export type BadgeTone = "success" | "warning" | "error";
+export type BadgeTone = string;
 
 export interface CardProps {
   imageSrc: string;
@@ -16,17 +16,6 @@ export interface CardProps {
   className?: string;
 }
 
-function badgeColor(tone: BadgeTone = "warning") {
-  switch (tone) {
-    case "success":
-      return { bg: "#007d48", text: "#ffffff" };
-    case "error":
-      return { bg: "#d33918", text: "#ffffff" };
-    case "warning":
-    default:
-      return { bg: "#d37918", text: "#ffffff" };
-  }
-}
 
 export default function Card({
   imageSrc,
