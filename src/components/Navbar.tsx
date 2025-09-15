@@ -27,13 +27,13 @@ export default function Navbar() {
         </div>
 
         <div className="hidden md:flex flex-1 items-center justify-center gap-8">
-          {["Men", "Women", "Kids", "Collections", "Contact"].map((label) => (
+          {NAV_LINKS.map((item) => (
             <Link
-              key={label}
-              href="#"
+              key={item.label}
+              href={item.href}
               className="text-[var(--color-dark-900)] text-[var(--text-body)] font-medium hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-[var(--color-dark-900)] rounded"
             >
-              {label}
+              {item.label}
             </Link>
           ))}
         </div>
@@ -71,13 +71,13 @@ export default function Navbar() {
         className={`md:hidden ${open ? "block" : "hidden"} border-t border-[#e5e5e5] bg-white`}
       >
         <div className="px-4 pt-3 pb-6 space-y-3">
-          {["Men", "Women", "Kids", "Collections", "Contact"].map((label) => (
+          {NAV_LINKS.map((item) => (
             <Link
-              key={label}
-              href="#"
+              key={item.label}
+              href={item.href}
               className="block text-[var(--color-dark-900)] text-[var(--text-body)] font-medium py-1.5"
             >
-              {label}
+              {item.label}
             </Link>
           ))}
           <div className="flex items-center justify-between pt-2">
