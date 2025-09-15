@@ -13,34 +13,22 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '50');
     const offset = parseInt(searchParams.get('offset') || '0');
 
-    let query = db.select().from(products);
-
-    // Apply search filter
-    if (search) {
-      query = query.where(
-        ilike(products.name, `%${search}%`)
-      );
-    }
-
-    // Apply sorting
-    const orderBy = sortOrder === 'asc' ? asc : desc;
-    switch (sortBy) {
-      case 'name':
-        query = query.orderBy(orderBy(products.name));
-        break;
-      case 'price':
-        query = query.orderBy(orderBy(products.price));
-        break;
-      case 'created_at':
-      default:
-        query = query.orderBy(orderBy(products.created_at));
-        break;
-    }
-
-    // Apply pagination
-    query = query.limit(limit).offset(offset);
-
-    const allProducts = await query;
+    const base = db.select().from(products);
+ 
+     const withWhere = search
+       ? base.where(ilike(products.name, `%${search}%`))
+       : base;
+ 
+     const orderFn = sortOrder === 'asc' ? asc : desc;
+     const orderExpr =
+       sortBy === 'name'
+         ? orderFn(products.name)
+         : sortBy === 'price'
+         ? orderFn(products.price)
+         : orderFn(products.created_at);
+ 
+     const withOrder = withWhere.orderBy(orderExpr);
+     const allProducts = await withOrder.limit(limit).offset(offset);
 
     return NextResponse.json({
       success: true,
