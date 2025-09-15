@@ -11,7 +11,7 @@ const footerCols = [
 
 export default function Footer() {
   return (
-    <footer className="bg-[var(--color-dark-900)] text-[var(--color-dark-700)] mt-24">
+    <footer className="bg-black text-[var(--color-dark-700)] mt-24">
       <nav aria-label="Footer" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-10">
           <div className="flex items-start">
@@ -53,7 +53,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-8 flex flex-col md:flex-row md:items-center md:justify-end gap-4">
+        <div className="mt-8 flex flex-col md:flex-row md:items-center md:justify-center gap-6">
           {["Guides", "Terms of Sale", "Terms of Use", "Nike Privacy Policy"].map((i) => (
             <Link key={i} href="#" className="hover:text-white text-[var(--text-footnote)]">
               {i}

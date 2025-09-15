@@ -41,11 +41,11 @@ export default function Card({
 }: CardProps) {
   const content = (
     <article className={`group ${className}`}>
-      <div className="relative bg-[#f5f5f5] rounded-lg overflow-hidden">
+      <div className="relative rounded-lg overflow-hidden bg-[var(--color-light-100)]">
         {badge ? (
           <span
-            className="absolute left-4 top-4 rounded-full px-4 py-1 text-[var(--text-caption)] font-medium"
-            style={{ backgroundColor: badgeColor(badge.tone).bg, color: badgeColor(badge.tone).text }}
+            className="absolute left-4 top-4 rounded-full px-3 py-1 text-[var(--text-caption)] font-medium"
+            style={{ backgroundColor: "#fff1e6", color: "#d37918" }}
             aria-label={badge.label}
           >
             {badge.label}
@@ -64,20 +64,20 @@ export default function Card({
         </div>
       </div>
 
-      <div className="bg-[var(--color-dark-900)] text-white px-4 py-4 rounded-b-lg -mt-2">
+      <div className="px-4 pt-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-[var(--text-heading-3)] font-medium">{title}</h3>
+          <h3 className="text-[var(--text-heading-3)] font-medium text-[var(--color-dark-900)]">{title}</h3>
           {price !== undefined && price !== null ? (
-            <span className="text-[var(--text-heading-3)] font-medium">
+            <span className="text-[var(--text-heading-3)] font-medium text-[var(--color-dark-900)]">
               {typeof price === "number" ? `$${price.toFixed(2)}` : price}
             </span>
           ) : null}
         </div>
         {subtitle ? (
-          <p className="text-[var(--text-body)] text-[var(--color-dark-500)] mt-1">{subtitle}</p>
+          <p className="text-[var(--text-body)] text-[var(--color-dark-600)] mt-1">{subtitle}</p>
         ) : null}
         {meta ? (
-          <p className="text-[var(--text-body)] text-[var(--color-dark-500)]">{meta}</p>
+          <p className="text-[var(--text-body)] text-[var(--color-dark-600)]">{meta}</p>
         ) : null}
       </div>
     </article>

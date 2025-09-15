@@ -11,26 +11,26 @@ export default function Navbar() {
 
   return (
     <header className="w-full border-b border-[#e5e5e5] bg-white sticky top-0 z-50">
-      <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center">
         <div className="flex items-center gap-6">
           <Link href="/" aria-label="Home" className="flex items-center">
-            <Image src="/logo.svg" alt="Nike" width={36} height={36} priority />
+            <Image src="/logo.svg" alt="Nike" width={36} height={36} priority className="invert-0" />
           </Link>
-
-          <div className="hidden md:flex items-center gap-8">
-            {["Men", "Women", "Kids", "Collections", "Contact"].map((label) => (
-              <Link
-                key={label}
-                href="#"
-                className="text-[var(--color-dark-900)] text-[var(--text-body)] font-medium hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-[var(--color-dark-900)] rounded"
-              >
-                {label}
-              </Link>
-            ))}
-          </div>
         </div>
 
-        <div className="hidden md:flex items-center gap-6">
+        <div className="hidden md:flex flex-1 items-center justify-center gap-8">
+          {["Men", "Women", "Kids", "Collections", "Contact"].map((label) => (
+            <Link
+              key={label}
+              href="#"
+              className="text-[var(--color-dark-900)] text-[var(--text-body)] font-medium hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-[var(--color-dark-900)] rounded"
+            >
+              {label}
+            </Link>
+          ))}
+        </div>
+
+        <div className="hidden md:flex items-center gap-6 ml-auto">
           <button
             type="button"
             className="text-[var(--color-dark-900)] text-[var(--text-body)] hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-[var(--color-dark-900)] rounded px-2 py-1"
