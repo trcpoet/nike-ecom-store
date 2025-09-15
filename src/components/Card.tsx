@@ -40,8 +40,10 @@ export default function Card({
   className = "",
 }: CardProps) {
   const content = (
-    <article className={`group ${className}`}>
-      <div className="relative rounded-lg overflow-hidden bg-[var(--color-light-100)]">
+    <article
+      className={`group transition-transform duration-200 ease-out hover:-translate-y-1 ${className}`}
+    >
+      <div className="relative bg-[#f5f5f5] rounded-lg overflow-hidden">
         {badge ? (
           <span
             className="absolute left-4 top-4 rounded-full px-3 py-1 text-[var(--text-caption)] font-medium"
@@ -58,15 +60,17 @@ export default function Card({
             alt={imageAlt}
             fill
             sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-            className="object-contain"
+            className="object-contain transition-transform duration-300 ease-out group-hover:scale-[1.03]"
             priority={false}
           />
         </div>
       </div>
 
-      <div className="px-4 pt-4">
+      <div className="px-4 pt-4 bg-white">
         <div className="flex items-center justify-between">
-          <h3 className="text-[var(--text-heading-3)] font-medium text-[var(--color-dark-900)]">{title}</h3>
+          <h3 className="text-[var(--text-heading-3)] font-medium text-[var(--color-dark-900)]">
+            {title}
+          </h3>
           {price !== undefined && price !== null ? (
             <span className="text-[var(--text-heading-3)] font-medium text-[var(--color-dark-900)]">
               {typeof price === "number" ? `$${price.toFixed(2)}` : price}
@@ -84,7 +88,11 @@ export default function Card({
   );
 
   return href ? (
-    <Link href={href} aria-label={title} className="block">
+    <Link
+      href={href}
+      aria-label={title}
+      className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--color-dark-900)]"
+    >
       {content}
     </Link>
   ) : (
