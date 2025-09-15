@@ -1,26 +1,55 @@
-@import "tailwindcss";
+@import 'tailwindcss';
+@theme {
+    /* Dark Shades */
+    --color-dark-900: #111111;
+    --color-dark-700: #757575;
+    --color-dark-500: #aaaaaa;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+    /* Light Shades */
+    --color-light-100: #ffffff;
+    --color-light-100: #f5f5f5;
+    --color-light-100: #e5e5e5;
+    --color-light-100: #cccccc;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+    /* Supporting Colors */
+    --color-light-100: #007d48;
+    --color-light-100: #d33918;
+    --color-light-100: #d37918;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+    /* Heading sizes */
+    --text-heading-1: 72px;
+    --text-heading-1--line-height: 78px;
+    --text-heading-1--font-weight: 700;
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+    --text-heading-2: 56px;
+    --text-heading-2--line-height: 60px;
+    --text-heading-2--font-weight: 700;
+
+    --text-heading-3: 24px;
+    --text-heading-3--line-height: 30px;
+    --text-heading-3--font-weight: 500;
+
+    /* Lead */
+    --text-lead: 20px;
+    --text-lead--line-height: 28px;
+    --text-lead--font-weight: 500;
+
+    /* Body */
+    --text-body: 16px;
+    --text-body--line-height: 24px;
+    --text-body--font-weight: 400;
+
+    --text-body-medium: 16px;
+    --text-body-medium--line-height: 24px;
+    --text-body-medium--font-weight: 500;
+
+    /* Caption */
+    --text-caption: 14px;
+    --text-caption--line-height: 20px;
+    --text-caption--font-weight: 500;
+
+    /* Footnote */
+    --text-footnote: 12px;
+    --text-footnote--line-height: 18px;
+    --text-footnote--font-weight: 400;
 }
