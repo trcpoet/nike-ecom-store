@@ -1,44 +1,73 @@
 import React from "react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import Card from "@/components/Card";
+import { Card } from "@/components";
+import {getCurrentUser} from "@/lib/auth/actions";
 
-const Home = () => {
-  return (
-    <>
-      <Navbar />
-      <main className="mx-auto max-w-7xl p-4 sm:p-6 lg:p-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          <Card
-            imageSrc="/shoes/shoe-1.jpg"
-            imageAlt="Nike AF1"
-            title="Nike Air Force 1 Mid '07"
-            subtitle="Men's Shoes"
-            meta="6 Colour"
-            price={98.3}
-            badge={{ label: "Best Seller", tone: "warning" }}
-          />
-          <Card
-            imageSrc="/shoes/shoe-3.webp"
-            imageAlt="Nike Shoe"
-            title="Nike Pegasus 41"
-            subtitle="Men's Shoes"
-            meta="3 Colour"
-            price={129.99}
-          />
-          <Card
-            imageSrc="/shoes/shoe-5.avif"
-            imageAlt="Nike Shoe"
-            title="Nike Metcon 9"
-            subtitle="Training"
-            meta="5 Colour"
-            price={139.99}
-          />
-        </div>
-      </main>
-      <Footer />
-    </>
-  );
+const products = [
+    {
+        id: 1,
+        title: "Air Max Pulse",
+        subtitle: "Men's Shoes",
+        meta: "6 Colour",
+        price: 149.99,
+        imageSrc: "/shoes/shoe-1.jpg",
+        badge: { label: "New", tone: "orange" as const },
+    },
+    {
+        id: 2,
+        title: "Air Zoom Pegasus",
+        subtitle: "Men's Shoes",
+        meta: "4 Colour",
+        price: 129.99,
+        imageSrc: "/shoes/shoe-2.webp",
+        badge: { label: "Hot", tone: "red" as const },
+    },
+    {
+        id: 3,
+        title: "InfinityRN 4",
+        subtitle: "Men's Shoes",
+        meta: "6 Colour",
+        price: 159.99,
+        imageSrc: "/shoes/shoe-3.webp",
+        badge: { label: "Trending", tone: "green" as const },
+    },
+    {
+        id: 4,
+        title: "Metcon 9",
+        subtitle: "Men's Shoes",
+        meta: "3 Colour",
+        price: 139.99,
+        imageSrc: "/shoes/shoe-4.webp",
+    },
+];
+
+const Home = async () => {
+    const user = await getCurrentUser();
+
+    console.log('USER:', user);
+
+    return (
+        <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <section aria-labelledby="latest" className="pb-12">
+                <h2 id="latest" className="mb-6 text-heading-3 text-dark-900">
+                    Latest shoes
+                </h2>
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                    {products.map((p) => (
+                        <Card
+                            key={p.id}
+                            title={p.title}
+                            subtitle={p.subtitle}
+                            meta={p.meta}
+                            imageSrc={p.imageSrc}
+                            price={p.price}
+                            badge={p.badge}
+                            href={`/products/${p.id}`}
+                        />
+                    ))}
+                </div>
+            </section>
+        </main>
+    );
 };
 
 export default Home;

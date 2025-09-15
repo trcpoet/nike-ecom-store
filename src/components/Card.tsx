@@ -40,7 +40,9 @@ export default function Card({
   className = "",
 }: CardProps) {
   const content = (
-    <article className={`group ${className}`}>
+    <article
+      className={`group transition-transform duration-200 ease-out hover:-translate-y-1 ${className}`}
+    >
       <div className="relative bg-[#f5f5f5] rounded-lg overflow-hidden">
         {badge ? (
           <span
@@ -58,7 +60,7 @@ export default function Card({
             alt={imageAlt}
             fill
             sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-            className="object-contain"
+            className="object-contain transition-transform duration-300 ease-out group-hover:scale-[1.03]"
             priority={false}
           />
         </div>
@@ -84,7 +86,7 @@ export default function Card({
   );
 
   return href ? (
-    <Link href={href} aria-label={title} className="block">
+    <Link href={href} aria-label={title} className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--color-dark-900)]">
       {content}
     </Link>
   ) : (

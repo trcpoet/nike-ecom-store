@@ -5,6 +5,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCartStore } from "@/store/cart";
 
+const NAV_LINKS = [
+    { label: "Men", href: "/men" },
+    { label: "Women", href: "/women" },
+    { label: "Kids", href: "/kids" },
+    { label: "Collections", href: "/collections" },
+    { label: "Contact", href: "/contact" },
+]
+
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const total = useCartStore((s) => s.getTotalItems());
