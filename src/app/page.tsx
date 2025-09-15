@@ -1,6 +1,5 @@
 import React from "react";
 import { Card } from "@/components";
-import { getCurrentUser } from "@/lib/auth/actions";
 
 const products = [
   {
@@ -40,10 +39,7 @@ const products = [
   },
 ];
 
-const Home = async () => {
-  const user = await getCurrentUser();
-  console.log("USER:", user);
-
+const Home = () => {
   return (
     <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <section aria-labelledby="latest" className="pb-12">
@@ -58,6 +54,7 @@ const Home = async () => {
               subtitle={p.subtitle}
               meta={p.meta}
               imageSrc={p.imageSrc}
+              imageAlt={p.title}
               price={p.price}
               badge={p.badge}
               href={`/products/${p.id}`}
