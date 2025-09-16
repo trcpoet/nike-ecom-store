@@ -6,9 +6,10 @@ import { eq } from 'drizzle-orm';
 // GET /api/products/[id] - Get a single product by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: unknown
 ) {
   try {
+    const { params } = context as { params: { id: string } };
     const productId = parseInt(params.id);
     
     if (isNaN(productId)) {
@@ -56,9 +57,10 @@ export async function GET(
 // PUT /api/products/[id] - Update a product by ID
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: unknown
 ) {
   try {
+    const { params } = context as { params: { id: string } };
     const productId = parseInt(params.id);
     
     if (isNaN(productId)) {
@@ -121,9 +123,10 @@ export async function PUT(
 // DELETE /api/products/[id] - Delete a product by ID
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: unknown
 ) {
   try {
+    const { params } = context as { params: { id: string } };
     const productId = parseInt(params.id);
     
     if (isNaN(productId)) {
