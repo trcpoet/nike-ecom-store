@@ -30,47 +30,34 @@ export default function Card({
 }: CardProps) {
   const content = (
     <article
-      className={`group transition-transform duration-200 ease-out hover:-translate-y-1 ${className}`}
+      className={`group rounded-xl bg-light-100 ring-1 ring-light-300 transition-colors hover:ring-dark-500  ${className}`}
     >
-      <div className="relative bg-[#f5f5f5] rounded-lg overflow-hidden">
-        {badge ? (
-          <span
-            className="absolute left-4 top-4 rounded-full px-3 py-1 text-[var(--text-caption)] font-medium"
-            style={{ backgroundColor: "#fff1e6", color: "#d37918" }}
-            aria-label={badge.label}
-          >
-            {badge.label}
-          </span>
-        ) : null}
-
-        <div className="relative w-full aspect-[16/10]">
+        <div className="relative aspect-square overflow-hidden rounded-t-xl bg-light-200">
           <Image
             src={imageSrc}
             alt={imageAlt}
             fill
             sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-            className="object-contain transition-transform duration-300 ease-out group-hover:scale-[1.03]"
+            className="object-cover transition-transform duration-300 ease-out group-hover:scale-105"
             priority={false}
           />
         </div>
-      </div>
-
       <div className="px-4 pt-4 bg-white">
-        <div className="flex items-center justify-between">
-          <h3 className="text-[var(--text-heading-3)] font-medium text-[var(--color-dark-900)]">
+        <div className="mb-1 flex items-center justify-between">
+          <h3 className="text-[var(--text-heading-3)] font-medium text-[var(-dark-900)]">
             {title}
           </h3>
           {price !== undefined && price !== null ? (
-            <span className="text-[var(--text-heading-3)] font-medium text-[var(--color-dark-900)]">
+            <span className="text-[var(--text-heading-3)] font-medium text-[var(-dark-900)]">
               {typeof price === "number" ? `$${price.toFixed(2)}` : price}
             </span>
           ) : null}
         </div>
         {subtitle ? (
-          <p className="text-[var(--text-body)] text-[var(--color-dark-600)] mt-1">{subtitle}</p>
+          <p className="text-[var(--text-body)]  mt-1">{subtitle}</p>
         ) : null}
         {meta ? (
-          <p className="text-[var(--text-body)] text-[var(--color-dark-600)]">{meta}</p>
+          <p className="text-[var(--text-body)] ">{meta}</p>
         ) : null}
       </div>
     </article>
@@ -80,7 +67,7 @@ export default function Card({
     <Link
       href={href}
       aria-label={title}
-      className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--color-dark-900)]"
+      className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(-dark-900)]"
     >
       {content}
     </Link>

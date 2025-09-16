@@ -22,7 +22,7 @@ export default function Navbar() {
       <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center">
         <div className="flex items-center gap-6">
           <Link href="/" aria-label="Home" className="flex items-center">
-            <Image src="/logo.svg" alt="Nike" width={36} height={36} priority className="invert-0" />
+            <Image src="/logo.svg" alt="Nike" width={36} height={36} priority className="invert-100" />
           </Link>
         </div>
 
