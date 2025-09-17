@@ -5,7 +5,6 @@ import { z } from "zod";
 import { db } from "../db";
 import { guests } from "../db/schema/guest";
 import { eq, lt } from "drizzle-orm";
-import { auth } from "./index";
 
 const EMAIL = z.string().email().max(255);
 const PASSWORD = z.string().min(8).max(128);
@@ -52,7 +51,7 @@ const SignUpSchema = z.object({
 });
 
 export async function signUp(input: z.infer<typeof SignUpSchema>) {
-  const data = SignUpSchema.parse(input);
+  SignUpSchema.parse(input);
   await mergeGuestCartWithUserCart();
   await clearGuestSession();
   return { ok: true, note: "Sign-up handler placeholder; integrate with Better Auth API." };
@@ -64,7 +63,7 @@ const SignInSchema = z.object({
 });
 
 export async function signIn(input: z.infer<typeof SignInSchema>) {
-  const data = SignInSchema.parse(input);
+  SignInSchema.parse(input);
   await mergeGuestCartWithUserCart();
   await clearGuestSession();
   return { ok: true, note: "Sign-in handler placeholder; integrate with Better Auth API." };
