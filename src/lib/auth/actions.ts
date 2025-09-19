@@ -66,7 +66,7 @@ export async function signUp(input: { email: string; password: string; name?: st
 
   const hashed = await bcrypt.hash(password, 10);
 
-  const res = await auth.api.signUpEmailPassword({
+  const res = await auth.api.signUpEmail({
     body: { email, password, name },
   });
 
@@ -90,7 +90,7 @@ export async function signIn(input: { email: string; password: string }) {
   const email = emailSchema.parse(input.email);
   const password = passwordSchema.parse(input.password);
 
-  const res = await auth.api.signInEmailPassword({
+  const res = await auth.api.signInEmail({
     body: { email, password },
   });
 
@@ -104,7 +104,7 @@ export async function signIn(input: { email: string; password: string }) {
 }
 
 export async function signOut() {
-  await auth.api.signOut();
+  await auth.api.signOut({});
   return { ok: true };
 }
 
