@@ -24,7 +24,37 @@ export default function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
         <div className="h-px flex-1 bg-light-300" />
       </div>
 
-      <form className="space-y-4" action="#" onSubmit={(e) => e.preventDefault()} noValidate>
+      <form
+        className="space-y-4"
+        onSubmit={async (e) => {
+          e.preventDefault();
+          const form = e.currentTarget as HTMLFormElement;
+          const formData = new FormData(form);
+          const actionType = (form.dataset.mode as string) === "sign-up" ? "sign-up" : "sign-in";
+          const payload: Record<string, unknown> = {
+            type: actionType,
+            email: formData.get("email"),
+            password: formData.get("password"),
+          };
+          if (actionType === "sign-up") {
+            payload.name = formData.get("name");
+          }
+          const res = await fetch("/api/auth", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          const data = await res.json();
+          if (!res.ok || !data?.ok) {
+            console.error("Auth error:", data?.error || "Unknown error");
+            alert(data?.error || "Authentication failed");
+            return;
+          }
+          window.location.href = "/";
+        }}
+        data-mode={mode}
+        noValidate
+      >
         {mode === "sign-up" && (
           <div>
             <label htmlFor="name" className="mb-1 block text-caption text-dark-900">

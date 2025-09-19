@@ -51,10 +51,17 @@ const SignUpSchema = z.object({
 });
 
 export async function signUp(input: z.infer<typeof SignUpSchema>) {
-  SignUpSchema.parse(input);
+  const parsed = SignUpSchema.parse(input);
+  const res = await fetch("/api/auth", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ type: "sign-up", ...parsed }),
+  });
+  const data = await res.json();
+  if (!res.ok || !data?.ok) throw new Error(data?.error || "Failed to create user");
   await mergeGuestCartWithUserCart();
   await clearGuestSession();
-  return { ok: true, note: "Sign-up handler placeholder; integrate with Better Auth API." };
+  return data;
 }
 
 const SignInSchema = z.object({
@@ -63,15 +70,29 @@ const SignInSchema = z.object({
 });
 
 export async function signIn(input: z.infer<typeof SignInSchema>) {
-  SignInSchema.parse(input);
+  const parsed = SignInSchema.parse(input);
+  const res = await fetch("/api/auth", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ type: "sign-in", ...parsed }),
+  });
+  const data = await res.json();
+  if (!res.ok || !data?.ok) throw new Error(data?.error || "Failed to sign in");
   await mergeGuestCartWithUserCart();
   await clearGuestSession();
-  return { ok: true, note: "Sign-in handler placeholder; integrate with Better Auth API." };
+  return data;
 }
 
 export async function signOut() {
+  const res = await fetch("/api/auth", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ type: "sign-out" }),
+  });
+  const data = await res.json();
+  if (!res.ok || !data?.ok) throw new Error(data?.error || "Failed to sign out");
   await clearGuestSession();
-  return { ok: true, note: "Sign-out handler placeholder; integrate with Better Auth API." };
+  return data;
 }
 
 export async function mergeGuestCartWithUserCart() {
