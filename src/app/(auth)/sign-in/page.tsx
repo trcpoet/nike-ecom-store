@@ -1,5 +1,6 @@
 import Link from "next/link";
 import AuthForm from "@/components/AuthForm";
+import {signIn} from "@/lib/auth/actions";
 
 export default function Page() {
   return (
@@ -10,7 +11,7 @@ export default function Page() {
           Sign Up
         </Link>
       </div>
-      <AuthForm mode="sign-in" />
+      <AuthForm mode="sign-in" onSubmit={signIn} />
     </>
   );
 }

@@ -1,40 +1,33 @@
-import { ReactNode } from "react";
-import Link from "next/link";
+import Image from "next/image";
 
-export default function AuthLayout({ children }: { children: ReactNode }) {
-  return (
-    <div className="min-h-dvh grid grid-cols-1 lg:grid-cols-12">
-      <aside className="hidden lg:block lg:col-span-6 bg-dark-900 text-light-100">
-        <div className="flex h-full flex-col justify-between p-8">
-          <div className="h-10 w-10 rounded-md bg-orange" />
-          <div className="pb-16">
-            <h1 className="text-heading-2 leading-[var(--text-heading-2--line-height)] font-[var(--text-heading-2--font-weight)]">
-              Just Do It
-            </h1>
-            <p className="mt-4 max-w-md text-lead text-light-400">
-              Join millions of athletes and fitness enthusiasts who trust Nike for their performance needs.
-            </p>
-            <div className="mt-6 flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-light-300" />
-              <span className="h-2 w-2 rounded-full bg-light-300/60" />
-              <span className="h-2 w-2 rounded-full bg-light-300/40" />
-            </div>
-          </div>
-          <p className="text-footnote text-light-400/80">© 2024 Nike. All rights reserved.</p>
-        </div>
-      </aside>
+export default function AuthLayout({ children }: { children: React.ReactNode }) {
+    return (
+        <main className="min-h-screen grid grid-cols-1 lg:grid-cols-2">
+            <section className="hidden lg:flex flex-col justify-between bg-dark-900 text-light-100 p-10">
+                <div className="flex items-center">
+                    <div className="h-8 w-8 rounded-md bg-orange inline-flex items-center justify-center">
+                        <Image src="/logo.svg" alt="Nike" width={20} height={20} />
+                    </div>
+                </div>
 
-      <main className="lg:col-span-6 bg-light-100">
-        <div className="mx-auto w-full max-w-md px-6 py-10 lg:py-16">
-          <div className="mb-6 text-center text-body text-dark-700">
-            <span>Already have an account? </span>
-            <Link href="/sign-in" className="underline hover:opacity-80">
-              Sign In
-            </Link>
-          </div>
-          {children}
-        </div>
-      </main>
-    </div>
-  );
+                <div className="space-y-4">
+                    <h1 className="text-heading-2">Just Do It</h1>
+                    <p className="max-w-md text-lead text-light-300">
+                        Join millions of athletes and fitness enthusiasts who trust Nike for their performance needs.
+                    </p>
+                    <div className="flex gap-2" aria-hidden="true">
+                        <span className="h-2 w-2 rounded-full bg-light-100/90" />
+                        <span className="h-2 w-2 rounded-full bg-light-100/50" />
+                        <span className="h-2 w-2 rounded-full bg-light-100/50" />
+                    </div>
+                </div>
+
+                <p className="text-footnote text-light-400">© 2025 Nike. All rights reserved.</p>
+            </section>
+
+            <section className="flex items-center justify-center px-4 py-10 sm:px-6 lg:px-8">
+                <div className="w-full max-w-md">{children}</div>
+            </section>
+        </main>
+    );
 }
