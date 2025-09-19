@@ -4,7 +4,6 @@ import { cookies } from 'next/headers';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import { db } from '../db';
-import { user as userTable } from '../db/schema/user';
 import { account as accountTable } from '../db/schema/account';
 import { guest as guestTable } from '../db/schema/guest';
 import { eq } from 'drizzle-orm';
@@ -66,24 +65,25 @@ export async function signUp(input: { email: string; password: string; name?: st
 
   const hashed = await bcrypt.hash(password, 10);
 
-  const res = await auth.api.signUpEmail({
-    body: { email, password, name },
-  });
+  const nameValue = name ?? email.split('@')[0] || 'User';
+  const body: { email: string; password: string; name: string } = { email, password, name: nameValue };
 
-  if (!res?.data?.user) {
+  const res = await auth.api.signUpEmail({ body });
+
+  if (!res?.user) {
     throw new Error('Sign up failed');
   }
 
   await db.insert(accountTable).values({
-    userId: res.data.user.id,
+    userId: res.user.id,
     accountId: email,
     providerId: 'credentials',
     password: hashed,
   });
 
-  await mergeGuestCartWithUserCart({ userId: res.data.user.id });
+  await mergeGuestCartWithUserCart({ userId: res.user.id });
 
-  return { userId: res.data.user.id };
+  return { userId: res.user.id };
 }
 
 export async function signIn(input: { email: string; password: string }) {
@@ -94,17 +94,17 @@ export async function signIn(input: { email: string; password: string }) {
     body: { email, password },
   });
 
-  if (!res?.data?.user) {
+  if (!res?.user) {
     throw new Error('Invalid credentials');
   }
 
-  await mergeGuestCartWithUserCart({ userId: res.data.user.id });
+  await mergeGuestCartWithUserCart({ userId: res.user.id });
 
-  return { userId: res.data.user.id };
+  return { userId: res.user.id };
 }
 
 export async function signOut() {
-  await auth.api.signOut({});
+  await auth.api.signOut({ method: 'POST' });
   return { ok: true };
 }
 
