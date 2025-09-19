@@ -1,98 +1,138 @@
 "use server";
 
-import { cookies } from "next/headers";
+import {cookies, headers} from "next/headers";
 import { z } from "zod";
-import { db } from "../db";
-import { guests } from "../db/schema/guest";
-import { eq, lt } from "drizzle-orm";
+import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { guests } from "@/lib/db/schema/index";
+import { and, eq, lt } from "drizzle-orm";
+import { randomUUID } from "crypto";
 
-const EMAIL = z.string().email().max(255);
-const PASSWORD = z.string().min(8).max(128);
-const NAME = z.string().min(1).max(100).optional();
-
-const cookieBase = {
-  httpOnly: true as const,
-  secure: true as const,
-  sameSite: "strict" as const,
-  path: "/" as const,
-  maxAge: 60 * 60 * 24 * 7, // 7 days
+const COOKIE_OPTIONS = {
+    httpOnly: true as const,
+    secure: true as const,
+    sameSite: "strict" as const,
+    path: "/" as const,
+    maxAge: 60 * 60 * 24 * 7, // 7 days
 };
 
-const GUEST_COOKIE = "guest_session";
-
-export async function guestSession() {
-  const store = await cookies();
-  const token = store.get(GUEST_COOKIE)?.value || null;
-  return token;
-}
+const emailSchema = z.string().email();
+const passwordSchema = z.string().min(8).max(128);
+const nameSchema = z.string().min(1).max(100);
 
 export async function createGuestSession() {
-  const store = await cookies();
-  const existing = store.get(GUEST_COOKIE)?.value;
-  if (existing) return existing;
+    const cookieStore = await cookies();
+    const existing = (await cookieStore).get("guest_session");
+    if (existing?.value) {
+        return { ok: true, sessionToken: existing.value };
+    }
 
-  const sessionToken = crypto.randomUUID();
-  const expires = new Date(Date.now() + cookieBase.maxAge * 1000);
+    const sessionToken = randomUUID();
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + COOKIE_OPTIONS.maxAge * 1000);
 
-  await db.insert(guests).values({
-    sessionToken,
-    expiresAt: expires,
-  });
+    await db.insert(guests).values({
+        sessionToken,
+        expiresAt,
+    });
 
-  store.set(GUEST_COOKIE, sessionToken, { ...cookieBase });
-
-  return sessionToken;
+    (await cookieStore).set("guest_session", sessionToken, COOKIE_OPTIONS);
+    return { ok: true, sessionToken };
 }
 
-const SignUpSchema = z.object({
-  email: EMAIL,
-  password: PASSWORD,
-  name: NAME,
-});
+export async function guestSession() {
+    const cookieStore = await cookies();
+    const token = (await cookieStore).get("guest_session")?.value;
+    if (!token) {
+        return { sessionToken: null };
+    }
+    const now = new Date();
+    await db
+        .delete(guests)
+        .where(and(eq(guests.sessionToken, token), lt(guests.expiresAt, now)));
 
-export async function signUp(input: z.infer<typeof SignUpSchema>) {
-  SignUpSchema.parse(input);
-  await mergeGuestCartWithUserCart();
-  await clearGuestSession();
-  return { ok: true, note: "Sign-up handler placeholder; integrate with Better Auth API." };
+    return { sessionToken: token };
 }
 
-const SignInSchema = z.object({
-  email: EMAIL,
-  password: PASSWORD,
+const signUpSchema = z.object({
+    email: emailSchema,
+    password: passwordSchema,
+    name: nameSchema,
 });
 
-export async function signIn(input: z.infer<typeof SignInSchema>) {
-  SignInSchema.parse(input);
-  await mergeGuestCartWithUserCart();
-  await clearGuestSession();
-  return { ok: true, note: "Sign-in handler placeholder; integrate with Better Auth API." };
+export async function signUp(formData: FormData) {
+    const rawData = {
+        name: formData.get('name') as string,
+        email: formData.get('email') as string,
+        password: formData.get('password') as string,
+    }
+
+    const data = signUpSchema.parse(rawData);
+
+    const res = await auth.api.signUpEmail({
+        body: {
+            email: data.email,
+            password: data.password,
+            name: data.name,
+        },
+    });
+
+    await migrateGuestToUser();
+    return { ok: true, userId: res.user?.id };
+}
+
+const signInSchema = z.object({
+    email: emailSchema,
+    password: passwordSchema,
+});
+
+export async function signIn(formData: FormData) {
+    const rawData = {
+        email: formData.get('email') as string,
+        password: formData.get('password') as string,
+    }
+
+    const data = signInSchema.parse(rawData);
+
+    const res = await auth.api.signInEmail({
+        body: {
+            email: data.email,
+            password: data.password,
+        },
+    });
+
+    await migrateGuestToUser();
+    return { ok: true, userId: res.user?.id };
+}
+
+export async function getCurrentUser() {
+    try {
+        const session = await auth.api.getSession({
+            headers: await headers()
+        })
+
+        return session?.user ?? null;
+    } catch (e) {
+        console.log(e);
+        return null;
+    }
 }
 
 export async function signOut() {
-  await clearGuestSession();
-  return { ok: true, note: "Sign-out handler placeholder; integrate with Better Auth API." };
+    await auth.api.signOut({ headers: {} });
+    return { ok: true };
 }
 
 export async function mergeGuestCartWithUserCart() {
-  return { merged: true };
+    await migrateGuestToUser();
+    return { ok: true };
 }
 
-export async function clearGuestSession() {
-  const store = await cookies();
-  const token = store.get(GUEST_COOKIE)?.value;
+async function migrateGuestToUser() {
+    const cookieStore = await cookies();
+    const token = (await cookieStore).get("guest_session")?.value;
+    if (!token) return;
 
-  if (token) {
-    await db
-      .delete(guests)
-      .where(eq(guests.sessionToken, token));
-
-    store.delete(GUEST_COOKIE);
-  }
-  return { cleared: true };
-}
-
-export async function cleanupExpiredGuests() {
-  await db.delete(guests).where(lt(guests.expiresAt, new Date()));
-  return { cleaned: true };
+    await db.delete(guests).where(eq(guests.sessionToken, token));
+    (await cookieStore).delete("guest_session");
 }

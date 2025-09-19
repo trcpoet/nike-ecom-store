@@ -1,9 +1,31 @@
 "use client";
 import React, { useState } from "react";
 import SocialProviders from "./SocialProviders";
+import { useRouter } from "next/navigation";
 
-export default function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
-  const [show, setShow] = useState(false);
+type Props = {
+    mode: "sign-in" | "sign-up";
+    onSubmit: (formData: FormData) => Promise<{ ok: boolean; userId?: string } | void>;
+}
+
+export default function AuthForm({ mode, onSubmit }: Props) {
+    const [show, setShow] = useState(false);
+    const router = useRouter();
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault()
+
+      const formData = new FormData(e.currentTarget)
+
+      try {
+        const result = await onSubmit(formData)
+
+        if(result?.ok) router.push("/")
+      } catch(e) {
+          console.error("Error", e);
+      }
+  }
+
   const headline = mode === "sign-up" ? "Join Nike Today!" : "Welcome back";
   const sub = mode === "sign-up" ? "Create your account to start your fitness journey" : "Sign in to continue";
 
@@ -24,17 +46,21 @@ export default function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
         <div className="h-px flex-1 bg-light-300" />
       </div>
 
-      <form className="space-y-4" action="#" onSubmit={(e) => e.preventDefault()} noValidate>
+      <form
+          className="space-y-4"
+          action="#"
+          onSubmit={handleSubmit}
+          noValidate>
         {mode === "sign-up" && (
           <div>
             <label htmlFor="name" className="mb-1 block text-caption text-dark-900">
-              Full Name
+              Name
             </label>
             <input
               id="name"
               name="name"
               autoComplete="name"
-              placeholder="Enter your full name"
+              placeholder="Enter your name"
               className="w-full rounded-xl border border-light-300 px-4 py-3 text-body placeholder:text-dark-500 focus:outline-none focus:ring-2 focus:ring-dark-900/20"
             />
           </div>

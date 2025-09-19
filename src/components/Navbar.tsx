@@ -31,7 +31,7 @@ export default function Navbar() {
             <Link
               key={item.label}
               href={item.href}
-              className="text-[var(--color-dark-900)] text-[var(--text-body)] font-medium hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-[var(--color-dark-900)] rounded"
+              className="text-[var(--color-dark-900)]  font-medium hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-[var(--color-dark-900)] rounded"
             >
               {item.label}
             </Link>
@@ -41,13 +41,13 @@ export default function Navbar() {
         <div className="hidden md:flex items-center gap-6 ml-auto">
           <button
             type="button"
-            className="text-[var(--color-dark-900)] text-[var(--text-body)] hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-[var(--color-dark-900)] rounded px-2 py-1"
+            className="text-[var(--color-dark-900)]  hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-[var(--color-dark-900)] rounded px-2 py-1"
           >
             Search
           </button>
           <Link
             href="#"
-            className="text-[var(--color-dark-900)] text-[var(--text-body)] font-medium hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-[var(--color-dark-900)] rounded px-2 py-1"
+            className="text-[var(--color-dark-900)]  font-medium hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-[var(--color-dark-900)] rounded px-2 py-1"
           >
             My Cart ({total})
           </Link>
@@ -75,7 +75,7 @@ export default function Navbar() {
             <Link
               key={item.label}
               href={item.href}
-              className="block text-[var(--color-dark-900)] text-[var(--text-body)] font-medium py-1.5"
+              className="block text-[var(--color-dark-900)]  font-medium py-1.5"
             >
               {item.label}
             </Link>
@@ -83,7 +83,7 @@ export default function Navbar() {
           <div className="flex items-center justify-between pt-2">
             <button
               type="button"
-              className="text-[var(--color-dark-900)] text-[var(--text-body)]"
+              className="text-[var(--color-dark-900)] "
             >
               Search
             </button>
