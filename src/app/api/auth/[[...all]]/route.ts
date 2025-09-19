@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (type === "sign-out") {
-      await auth.api.signOut({ request: req });
+      await auth.api.signOut({ headers: req.headers });
       return NextResponse.json({ ok: true });
     }
 
@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
     const type = searchParams.get("type");
 
     if (type === "session") {
-      const session = await auth.api.getSession({ request: req });
+      const session = await auth.api.getSession({ headers: req.headers });
       return NextResponse.json({ ok: true, session });
     }
 
