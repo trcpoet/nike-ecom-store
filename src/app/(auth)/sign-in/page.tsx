@@ -1,7 +1,17 @@
 import Link from "next/link";
 import AuthForm from "@/components/AuthForm";
+import { redirect } from "next/navigation";
+import { signIn } from "@/lib/auth/actions";
 
 export default function Page() {
+  async function action(formData: FormData) {
+    "use server";
+    const email = String(formData.get("email") || "");
+    const password = String(formData.get("password") || "");
+    await signIn({ email, password });
+    redirect("/");
+  }
+
   return (
     <>
       <div className="mb-2 text-center text-body text-dark-700">
@@ -10,7 +20,7 @@ export default function Page() {
           Sign Up
         </Link>
       </div>
-      <AuthForm mode="sign-in" />
+      <AuthForm mode="sign-in" action={action} />
     </>
   );
 }

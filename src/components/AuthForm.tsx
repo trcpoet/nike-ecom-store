@@ -2,7 +2,15 @@
 import React, { useState } from "react";
 import SocialProviders from "./SocialProviders";
 
-export default function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
+type AuthAction = (formData: FormData) => Promise<void> | void;
+
+export default function AuthForm({
+  mode,
+  action,
+}: {
+  mode: "sign-in" | "sign-up";
+  action: AuthAction;
+}) {
   const [show, setShow] = useState(false);
   const headline = mode === "sign-up" ? "Join Nike Today!" : "Welcome back";
   const sub = mode === "sign-up" ? "Create your account to start your fitness journey" : "Sign in to continue";
@@ -24,7 +32,7 @@ export default function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
         <div className="h-px flex-1 bg-light-300" />
       </div>
 
-      <form className="space-y-4" action="#" onSubmit={(e) => e.preventDefault()} noValidate>
+      <form className="space-y-4" action={action} noValidate>
         {mode === "sign-up" && (
           <div>
             <label htmlFor="name" className="mb-1 block text-caption text-dark-900">
