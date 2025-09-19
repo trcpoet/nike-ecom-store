@@ -1,53 +1,60 @@
 "use server";
 
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { z } from "zod";
-import { db } from "../db";
-import { guests } from "../db/schema/guest";
-import { eq, lt } from "drizzle-orm";
+import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { guests } from "@/lib/db/schema/index";
+import { and, eq, lt } from "drizzle-orm";
+import { randomUUID } from "crypto";
 
-const EMAIL = z.string().email().max(255);
-const PASSWORD = z.string().min(8).max(128);
-const NAME = z.string().min(1).max(100).optional();
-
-const cookieBase = {
+const COOKIE_OPTIONS = {
   httpOnly: true as const,
   secure: true as const,
   sameSite: "strict" as const,
   path: "/" as const,
-  maxAge: 60 * 60 * 24 * 7, // 7 days
+  maxAge: 60 * 60 * 24 * 7,
 };
 
-const GUEST_COOKIE = "guest_session";
-
-export async function guestSession() {
-  const store = await cookies();
-  const token = store.get(GUEST_COOKIE)?.value || null;
-  return token;
-}
+const emailSchema = z.string().email();
+const passwordSchema = z.string().min(8).max(128);
+const nameSchema = z.string().min(1).max(100);
 
 export async function createGuestSession() {
-  const store = await cookies();
-  const existing = store.get(GUEST_COOKIE)?.value;
-  if (existing) return existing;
+  const cookieStore = await cookies();
+  const existing = (await cookieStore).get("guest_session");
+  if (existing?.value) {
+    return { ok: true, sessionToken: existing.value };
+  }
 
-  const sessionToken = crypto.randomUUID();
-  const expires = new Date(Date.now() + cookieBase.maxAge * 1000);
+  const sessionToken = randomUUID();
+  const now = new Date();
+  const expiresAt = new Date(now.getTime() + COOKIE_OPTIONS.maxAge * 1000);
 
   await db.insert(guests).values({
     sessionToken,
-    expiresAt: expires,
+    expiresAt,
   });
 
-  store.set(GUEST_COOKIE, sessionToken, { ...cookieBase });
+  (await cookieStore).set("guest_session", sessionToken, COOKIE_OPTIONS);
+  return { ok: true, sessionToken };
+}
 
-  return sessionToken;
+export async function guestSession() {
+  const cookieStore = await cookies();
+  const token = (await cookieStore).get("guest_session")?.value;
+  if (!token) {
+    return { sessionToken: null };
+  }
+  const now = new Date();
+  await db.delete(guests).where(and(eq(guests.sessionToken, token), lt(guests.expiresAt, now)));
+  return { sessionToken: token };
 }
 
 const SignUpSchema = z.object({
-  email: EMAIL,
-  password: PASSWORD,
-  name: NAME,
+  email: emailSchema,
+  password: passwordSchema,
+  name: nameSchema,
 });
 
 export async function signUp(input: z.infer<typeof SignUpSchema>) {
@@ -65,8 +72,8 @@ export async function signUp(input: z.infer<typeof SignUpSchema>) {
 }
 
 const SignInSchema = z.object({
-  email: EMAIL,
-  password: PASSWORD,
+  email: emailSchema,
+  password: passwordSchema,
 });
 
 export async function signIn(input: z.infer<typeof SignInSchema>) {
@@ -83,6 +90,17 @@ export async function signIn(input: z.infer<typeof SignInSchema>) {
   return data;
 }
 
+export async function getCurrentUser() {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+    return session?.user ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export async function signOut() {
   const res = await fetch("/api/auth", {
     method: "POST",
@@ -96,24 +114,24 @@ export async function signOut() {
 }
 
 export async function mergeGuestCartWithUserCart() {
-  return { merged: true };
+  await migrateGuestToUser();
+  return { ok: true };
 }
 
 export async function clearGuestSession() {
-  const store = await cookies();
-  const token = store.get(GUEST_COOKIE)?.value;
-
+  const cookieStore = await cookies();
+  const token = (await cookieStore).get("guest_session")?.value;
   if (token) {
-    await db
-      .delete(guests)
-      .where(eq(guests.sessionToken, token));
-
-    store.delete(GUEST_COOKIE);
+    await db.delete(guests).where(eq(guests.sessionToken, token));
+    (await cookieStore).delete("guest_session");
   }
   return { cleared: true };
 }
 
-export async function cleanupExpiredGuests() {
-  await db.delete(guests).where(lt(guests.expiresAt, new Date()));
-  return { cleaned: true };
+async function migrateGuestToUser() {
+  const cookieStore = await cookies();
+  const token = (await cookieStore).get("guest_session")?.value;
+  if (!token) return;
+  await db.delete(guests).where(eq(guests.sessionToken, token));
+  (await cookieStore).delete("guest_session");
 }

@@ -5,7 +5,7 @@ export const users = pgTable("user", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name"),
   email: text("email").notNull().unique(),
-  emailVerified: boolean("emailVerified").notNull().default(false),
+  emailVerified: boolean("email_verified").notNull().default(false),
   image: text("image"),
   createdAt: timestamp("createdAt", { mode: "date", withTimezone: false }).notNull().default(sql`now()`),
   updatedAt: timestamp("updatedAt", { mode: "date", withTimezone: false }).notNull().default(sql`now()`),
