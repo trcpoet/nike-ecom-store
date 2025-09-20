@@ -15,7 +15,17 @@ export default async function ProductsPage({
     const sp = await searchParams;
 
     const parsed = parseFilterParams(sp);
-    const { products, totalCount } = await getAllProducts(parsed);
+
+    type Product = {
+        id: string;
+        name: string;
+        subtitle?: string;
+        imageUrl?: string;
+        minPrice: number | null;
+        maxPrice: number | null;
+    };
+
+    const { products, totalCount }: { products: Product[]; totalCount: number } = await getAllProducts(parsed);
 
     const activeBadges: string[] = [];
     (sp.gender ? (Array.isArray(sp.gender) ? sp.gender : [sp.gender]) : []).forEach((g) =>
@@ -30,6 +40,8 @@ export default async function ProductsPage({
         const label = min && max ? `$${min} - $${max}` : min && !max ? `Over $${min}` : `$0 - $${max}`;
         activeBadges.push(label);
     });
+
+
 
     return (
         <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

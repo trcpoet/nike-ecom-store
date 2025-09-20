@@ -8,7 +8,7 @@ import {
 import { Card } from "@/components";
 // import { Heart, ShoppingBag, Star } from "lucide-react";
 // import ColorSwatches from "@/components/ColorSwatches";
-import { getProduct, getProductReviews, getRecommendedProducts, type Review, type RecommendedProduct } from "@/lib/actions/product";
+import { getProduct, getProductReviews, getRecommendedProducts, type Review, type RecommendedProduct } from "@/lib/db/schema/products";
 
 type GalleryVariant = { color: string; images: string[] };
 

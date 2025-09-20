@@ -1,24 +1,46 @@
-import React from "react";
-import { JSX } from "react/jsx-runtime";
+// products.ts
 import postgres from "postgres";
-import value = postgres.toPascal.value;
-export function products() {
+import { JSX } from "react";
+// Define the type for Product if you're using TypeScript
+type ProductData = {
+    id: number;
+    name: string;
+    image_url?: string;
+    description?: JSX.Element;
+    price: number;
+};
+
+// Define the ProductName class
+export class ProductName {
+    constructor(public value: string) {}
 }
 
-class name {
-}
-
+// Define the Product class
 export class Product {
-    get image_url(): undefined {
-        return this._image_url;
-    }
+    id: number;
+    name: ProductName;
+    image_url?: string;
+    description?: JSX.Element;
+    price: number;
 
-    set image_url(value: undefined) {
-        this._image_url = value;
+    constructor(data: ProductData) {
+        this.id = data.id;
+        this.name = new ProductName(data.name);
+        this.image_url = data.image_url;
+        this.description = data.description;
+        this.price = data.price;
     }
-    name: name | undefined;
-    id: React.Key | undefined;
-    private _image_url: never | undefined;
-    description: JSX.Element | undefined;
-    price: number | undefined;
+}
+
+// Sample function that fetches products from the database
+export async function products(): Promise<Product[]> {
+    const sql = postgres(); // Initialize your postgres connection
+
+    // Fetch products from the database
+    const productData: ProductData[] = await sql`
+        SELECT id, name, image_url, description, price FROM products
+    `;
+
+    // Map the fetched data to Product instances
+    return productData.map(data => new Product(data));
 }
