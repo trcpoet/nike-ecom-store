@@ -1,9 +1,10 @@
 import Link from "next/link";
 // @ts-ignore
+import React from "react";
 import {
     Component,
     ReactNode,
-    Suspense
+    Suspense,
 } from "react";
 import { Card } from "@/components";
 // import { Heart, ShoppingBag, Star } from "lucide-react";

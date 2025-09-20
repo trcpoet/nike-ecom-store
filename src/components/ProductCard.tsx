@@ -6,8 +6,14 @@ import Image from 'next/image';
 import PropTypes from 'prop-types';
 import React from "react";
 
-interface ProductCardProps {
+export interface ProductCardProps {
     product: Product;
+    title: string; // Ensure title is defined here
+    subtitle?: string;
+    imageSrc: string;
+    price?: string | number;
+    href: string;
+
 }
 
 const ProductCard = React.memo(({ product }: ProductCardProps) => {
@@ -18,6 +24,7 @@ const ProductCard = React.memo(({ product }: ProductCardProps) => {
         addItem(product, 1);
         console.log(`Added ${name.value} to cart`); // Accessing name.value
     };
+
 
     return (
         <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
@@ -69,15 +76,6 @@ const ProductCard = React.memo(({ product }: ProductCardProps) => {
     );
 });
 
-(ProductCard as React.FC<ProductCardProps>).propTypes = {
-    product: PropTypes.shape({
-        name: PropTypes.shape({
-            value: PropTypes.string.isRequired, // Ensure this matches your ProductName structure
-        }).isRequired,
-        image_url: PropTypes.string,
-        description: PropTypes.string,
-        price: PropTypes.number.isRequired,
-    }).isRequired,
-};
+
 
 export default ProductCard;

@@ -2,6 +2,7 @@ import Link from "next/link";
 import AuthForm from "@/components/AuthForm";
 import { redirect } from "next/navigation";
 import { signIn } from "@/lib/auth/actions";
+import React from "react";
 
 export default function Page() {
   async function action(formData: FormData) {

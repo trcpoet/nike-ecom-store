@@ -3,6 +3,7 @@ import AuthForm from "@/components/AuthForm";
 import { redirect } from "next/navigation";
 import { signUp } from "@/lib/auth/actions";
 import {auth} from "@/lib/auth";
+import React from "react";
 
 export default async function Page() {
   async function action(formData: FormData) {

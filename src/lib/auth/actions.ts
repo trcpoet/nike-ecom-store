@@ -59,19 +59,22 @@ export async function guestSession() {
     }
     return g;
 }
-
 export async function signUp(input: { email: string; password: string; name?: string }) {
     const email = emailSchema.parse(input.email);
     const password = passwordSchema.parse(input.password);
     const name = nameSchema.parse(input.name);
     const hashed = await bcrypt.hash(password, 10);
     const nameValue = (name ?? email.split("@")[0]) || "User";
+
+    const emailValue = email; // Ensure this is defined
+    const emailVerified = false; // Set this based on your logic
+    const imageValue = null; // Or set it to a valid image URL if available
+
     const body = { email, password, name: nameValue };
 
     try {
         // Better Auth first
         const res = await auth.api.signUpEmail({ body });
-
         if (res?.user) {
             await db.insert(accountTable).values({
                 userId: res.user.id,
@@ -79,7 +82,6 @@ export async function signUp(input: { email: string; password: string; name?: st
                 providerId: "credentials",
                 password: hashed,
             });
-
             await mergeGuestCartWithUserCart({ userId: res.user.id });
             return { userId: res.user.id };
         }
@@ -92,25 +94,25 @@ export async function signUp(input: { email: string; password: string; name?: st
         .insert(schema.user)
         .values({
             name: nameValue,
-            email,
-            emailVerified: false,
-            image: null,
-            createdAt: new Date(),
-            updatedAt: new Date(),
+            email: emailValue,
+            emailVerified: emailVerified, // Change to camelCase
+            image: imageValue || null, // Ensure imageValue is defined
+            createdAt: new Date(), // Change to camelCase
+            updatedAt: new Date(), // Change to camelCase
         })
         .returning();
 
     if (!user) throw new Error("Failed to create user (Better Auth + fallback both failed)");
-
     await db.insert(accountTable).values({
         userId: user.id,
         accountId: email,
         providerId: "credentials",
         password: hashed,
     });
-
     return { userId: user.id };
 }
+
+
 
 export async function signIn(input: { email: string; password: string }) {
     const email = emailSchema.parse(input.email);

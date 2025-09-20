@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Jost } from "next/font/google";
 import "./globals.css";
+import { useRouter } from "next/navigation";
+import React from "react";
 
 const jost = Jost({
   variable: "--font-jost",
