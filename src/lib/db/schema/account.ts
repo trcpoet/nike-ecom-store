@@ -18,12 +18,12 @@ export const account = pgTable('account', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
 
-export const accountRelations = relations(account, ({ one }) => ({
-  user: one(user, {
-    fields: [account.userId],
-    references: [user.id],
-  }),
-}));
-
-export type Account = typeof account.$inferSelect;
-export type NewAccount = typeof account.$inferInsert;
+// export const accountRelations = relations(account, ({ one }) => ({
+//   user: one(user, {
+//     fields: [account.userId],
+//     references: [user.id],
+//   }),
+// }));
+//
+// export type Account = typeof account.$inferSelect;
+// export type NewAccount = typeof account.$inferInsert;

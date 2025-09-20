@@ -1,6 +1,6 @@
 'use client';
 
-import { Product } from '@/lib/db/schema';
+import { Product } from '@/lib/db/schema/products';
 import { useCartStore } from '@/store/cart';
 import Image from 'next/image';
 
@@ -21,7 +21,7 @@ export default function ProductList({ products }: ProductListProps) {
     return (
       <div className="text-center py-12">
         <p className="text-gray-600 mb-4">No products found. Seed the database first!</p>
-        <button 
+        <button
           onClick={async () => {
             try {
               const response = await fetch('/api/seed', { method: 'POST' });
@@ -45,8 +45,8 @@ export default function ProductList({ products }: ProductListProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
       {products.map((product) => (
-        <div 
-          key={product.id} 
+        <div
+          key={product.id}
           className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
         >
           <div className="aspect-square relative bg-gray-100">
@@ -67,24 +67,24 @@ export default function ProductList({ products }: ProductListProps) {
               </div>
             )}
           </div>
-          
+
           <div className="p-4">
             <h4 className="font-semibold text-lg mb-2 line-clamp-2">
               {product.name}
             </h4>
-            
+
             {product.description && (
               <p className="text-gray-600 text-sm mb-3 line-clamp-2">
                 {product.description}
               </p>
             )}
-            
+
             <div className="flex items-center justify-between">
               <span className="text-xl font-bold">
                 ${(product.price / 100).toFixed(2)}
               </span>
-              
-              <button 
+
+              <button
                 onClick={() => handleAddToCart(product)}
                 className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
               >

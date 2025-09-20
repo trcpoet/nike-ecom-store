@@ -1,11 +1,12 @@
 'use client';
 
-import { Product } from '@/lib/db/schema';
+import { products } from '@/lib/db/schema/products';
 import { useCartStore } from '@/store/cart';
 import Image from 'next/image';
 
 interface ProductCardProps {
-  product: Product;
+    // @ts-ignore
+    product: products.Product;
 }
 
 export default function ProductCard({ product }: ProductCardProps) {

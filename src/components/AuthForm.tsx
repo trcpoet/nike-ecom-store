@@ -36,13 +36,13 @@ export default function AuthForm({
         {mode === "sign-up" && (
           <div>
             <label htmlFor="name" className="mb-1 block text-caption text-dark-900">
-              Full Name
+              Name
             </label>
             <input
               id="name"
               name="name"
               autoComplete="name"
-              placeholder="Enter your full name"
+              placeholder="Enter your name"
               className="w-full rounded-xl border border-light-300 px-4 py-3 text-body placeholder:text-dark-500 focus:outline-none focus:ring-2 focus:ring-dark-900/20"
             />
           </div>

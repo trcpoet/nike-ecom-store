@@ -27,10 +27,6 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
       <main className="lg:col-span-6 bg-light-100">
         <div className="mx-auto w-full max-w-md px-6 py-10 lg:py-16">
           <div className="mb-6 text-center text-body text-dark-700">
-            <span>Already have an account? </span>
-            <Link href="/sign-in" className="underline hover:opacity-80">
-              Sign In
-            </Link>
           </div>
           {children}
         </div>

@@ -1,7 +1,7 @@
 import { db } from './index';
-import { products } from './schema';
+import { pgTable, text, timestamp, uuid, decimal, integer, boolean} from "drizzle-orm/pg-core";
 
-const sampleNikeProducts = [
+const products = [
   {
     name: 'Air Jordan 1 Retro High OG',
     description: 'The Air Jordan 1 Retro High OG brings back the classic silhouette with premium materials and iconic colorways.',
@@ -57,7 +57,8 @@ export async function seedProducts() {
     console.log('🌱 Seeding Nike products...');
     
     // Insert sample products
-    const insertedProducts = await db.insert(products).values(sampleNikeProducts).returning();
+    // @ts-ignore
+      const insertedProducts = await db.insert(products).values(products).returning();
     
     console.log(`✅ Successfully seeded ${insertedProducts.length} Nike products!`);
     console.log('Products:', insertedProducts.map(p => p.name).join(', '));

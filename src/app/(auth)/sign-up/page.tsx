@@ -2,8 +2,9 @@ import Link from "next/link";
 import AuthForm from "@/components/AuthForm";
 import { redirect } from "next/navigation";
 import { signUp } from "@/lib/auth/actions";
+import {auth} from "@/lib/auth";
 
-export default function Page() {
+export default async function Page() {
   async function action(formData: FormData) {
     "use server";
     const name = formData.get("name") ? String(formData.get("name")) : undefined;
@@ -13,7 +14,8 @@ export default function Page() {
     redirect("/");
   }
 
-  return (
+
+    return (
     <>
       <div className="mb-2 text-center text-body text-dark-700">
         <span>Already have an account? </span>

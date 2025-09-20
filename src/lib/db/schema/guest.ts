@@ -7,5 +7,5 @@ export const guest = pgTable('guest', {
   expiresAt: timestamp('expires_at').notNull(),
 });
 
-export type Guest = typeof guest.$inferSelect;
-export type NewGuest = typeof guest.$inferInsert;
+// export type Guest = typeof guest.$inferSelect;
+// export type NewGuest = typeof guest.$inferInsert;
