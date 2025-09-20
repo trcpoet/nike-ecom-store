@@ -9,7 +9,7 @@ import { account as accountTable } from "../db/schema/account";
 import { guest as guestTable } from "../db/schema/guest";
 import { eq } from "drizzle-orm";
 import { auth } from ".";
-
+import {user} from "../db/schema";
 const C_GUEST = "guest_session";
 const COOKIE_MAX_AGE_DAYS = 7;
 
@@ -95,7 +95,7 @@ export async function signUp(input: { email: string; password: string; name?: st
         .values({
             name: nameValue,
             email: emailValue,
-            emailVerified: emailVerified, // Change to camelCase
+            email_verified: emailVerified, // Change to camelCase
             image: imageValue || null, // Ensure imageValue is defined
             createdAt: new Date(), // Change to camelCase
             updatedAt: new Date(), // Change to camelCase
@@ -111,8 +111,6 @@ export async function signUp(input: { email: string; password: string; name?: st
     });
     return { userId: user.id };
 }
-
-
 
 export async function signIn(input: { email: string; password: string }) {
     const email = emailSchema.parse(input.email);
@@ -162,6 +160,7 @@ export async function mergeGuestCartWithUserCart({ userId }: { userId: string })
 }
 
 export async function getCurrentUser() {
+    console.log('USER:', user);
     try {
         // Wait for the headers to resolve
         const h = new Headers(Object.fromEntries((await headers()).entries()));
