@@ -1,194 +1,138 @@
-'use server';
+"use server";
 
-import * as schema from "../db/schema";
-import { headers, cookies } from "next/headers";
+import {cookies, headers} from "next/headers";
 import { z } from "zod";
-import bcrypt from "bcryptjs";
-import { db } from "../db";
-import { account as accountTable } from "../db/schema/account";
-import { guest as guestTable } from "../db/schema/guest";
-import { eq } from "drizzle-orm";
-import { auth } from ".";
-import {user} from "../db/schema";
-const C_GUEST = "guest_session";
-const COOKIE_MAX_AGE_DAYS = 7;
+import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { guests } from "@/lib/db/schema/index";
+import { and, eq, lt } from "drizzle-orm";
+import { randomUUID } from "crypto";
 
-const emailSchema = z.string().email("Invalid email address");
-const passwordSchema = z.string().min(8);
-const nameSchema = z.string().min(1).optional();
+const COOKIE_OPTIONS = {
+    httpOnly: true as const,
+    secure: true as const,
+    sameSite: "strict" as const,
+    path: "/" as const,
+    maxAge: 60 * 60 * 24 * 7, // 7 days
+};
+
+const emailSchema = z.string().email();
+const passwordSchema = z.string().min(8).max(128);
+const nameSchema = z.string().min(1).max(100);
 
 export async function createGuestSession() {
     const cookieStore = await cookies();
-    const existing = cookieStore.get(C_GUEST)?.value;
-    if (existing) return { sessionToken: existing };
+    const existing = (await cookieStore).get("guest_session");
+    if (existing?.value) {
+        return { ok: true, sessionToken: existing.value };
+    }
 
-    const sessionToken = crypto.randomUUID();
-    const expiresAt = new Date(Date.now() + COOKIE_MAX_AGE_DAYS * 24 * 60 * 60 * 1000);
+    const sessionToken = randomUUID();
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + COOKIE_OPTIONS.maxAge * 1000);
 
-    await db.insert(guestTable).values({ sessionToken, expiresAt });
-
-    cookieStore.set({
-        name: C_GUEST,
-        value: sessionToken,
-        httpOnly: true,
-        secure: true,
-        sameSite: "strict",
-        path: "/",
-        expires: expiresAt,
+    await db.insert(guests).values({
+        sessionToken,
+        expiresAt,
     });
 
-    return { sessionToken };
+    (await cookieStore).set("guest_session", sessionToken, COOKIE_OPTIONS);
+    return { ok: true, sessionToken };
 }
 
 export async function guestSession() {
     const cookieStore = await cookies();
-    const token = cookieStore.get(C_GUEST)?.value;
-    if (!token) return null;
-
-    const [g] = await db
-        .select()
-        .from(guestTable)
-        .where(eq(guestTable.sessionToken, token))
-        .limit(1);
-
-    if (!g) return null;
-    if (g.expiresAt && g.expiresAt < new Date()) {
-        await db.delete(guestTable).where(eq(guestTable.sessionToken, token));
-        cookieStore.delete(C_GUEST);
-        return null;
+    const token = (await cookieStore).get("guest_session")?.value;
+    if (!token) {
+        return { sessionToken: null };
     }
-    return g;
+    const now = new Date();
+    await db
+        .delete(guests)
+        .where(and(eq(guests.sessionToken, token), lt(guests.expiresAt, now)));
+
+    return { sessionToken: token };
 }
-export async function signUp(input: { email: string; password: string; name?: string }) {
-    const email = emailSchema.parse(input.email);
-    const password = passwordSchema.parse(input.password);
-    const name = nameSchema.parse(input.name);
-    const hashed = await bcrypt.hash(password, 10);
-    const nameValue = (name ?? email.split("@")[0]) || "User";
 
-    const emailValue = email; // Ensure this is defined
-    const emailVerified = false; // Set this based on your logic
-    const imageValue = null; // Or set it to a valid image URL if available
+const signUpSchema = z.object({
+    email: emailSchema,
+    password: passwordSchema,
+    name: nameSchema,
+});
 
-    const body = { email, password, name: nameValue };
-
-    try {
-        // Better Auth first
-        const res = await auth.api.signUpEmail({ body });
-        if (res?.user) {
-            await db.insert(accountTable).values({
-                userId: res.user.id,
-                accountId: email,
-                providerId: "credentials",
-                password: hashed,
-            });
-            await mergeGuestCartWithUserCart({ userId: res.user.id });
-            return { userId: res.user.id };
-        }
-    } catch (err) {
-        console.error("Better Auth signup failed:", err);
+export async function signUp(formData: FormData) {
+    const rawData = {
+        name: formData.get('name') as string,
+        email: formData.get('email') as string,
+        password: formData.get('password') as string,
     }
 
-    // Fallback: manual insert
-    const [user] = await db
-        .insert(schema.user)
-        .values({
-            name: nameValue,
-            email: emailValue,
-            email_verified: emailVerified, // Change to camelCase
-            image: imageValue || null, // Ensure imageValue is defined
-            createdAt: new Date(), // Change to camelCase
-            updatedAt: new Date(), // Change to camelCase
-        })
-        .returning();
+    const data = signUpSchema.parse(rawData);
 
-    if (!user) throw new Error("Failed to create user (Better Auth + fallback both failed)");
-    await db.insert(accountTable).values({
-        userId: user.id,
-        accountId: email,
-        providerId: "credentials",
-        password: hashed,
+    const res = await auth.api.signUpEmail({
+        body: {
+            email: data.email,
+            password: data.password,
+            name: data.name,
+        },
     });
-    return { userId: user.id };
+
+    await migrateGuestToUser();
+    return { ok: true, userId: res.user?.id };
 }
 
-export async function signIn(input: { email: string; password: string }) {
-    const email = emailSchema.parse(input.email);
-    const password = passwordSchema.parse(input.password);
+const signInSchema = z.object({
+    email: emailSchema,
+    password: passwordSchema,
+});
 
-    try {
-        const res = await auth.api.signInEmail({ body: { email, password } });
-        if (res?.user) {
-            await mergeGuestCartWithUserCart({ userId: res.user.id });
-            return { userId: res.user.id };
-        }
-    } catch (err) {
-        console.error("Better Auth signIn failed:", err);
+export async function signIn(formData: FormData) {
+    const rawData = {
+        email: formData.get('email') as string,
+        password: formData.get('password') as string,
     }
 
-    // Fallback: check credentials manually
-    const [account] = await db
-        .select()
-        .from(accountTable)
-        .where(eq(accountTable.accountId, email))
-        .limit(1);
+    const data = signInSchema.parse(rawData);
 
-    if (!account || !account.password) {
-        throw new Error("Invalid credentials");
-    }
+    const res = await auth.api.signInEmail({
+        body: {
+            email: data.email,
+            password: data.password,
+        },
+    });
 
-    const valid = await bcrypt.compare(password, account.password);
-    if (!valid) throw new Error("Invalid credentials");
-
-    return { userId: account.userId };
-}
-
-export async function signOut() {
-    await auth.api.signOut({} as Parameters<typeof auth.api.signOut>[0]);
-    return { ok: true };
-}
-
-export async function mergeGuestCartWithUserCart({ userId }: { userId: string }) {
-    const cookieStore = await cookies();
-    const token = cookieStore.get(C_GUEST)?.value;
-    if (!token) return { ok: true };
-
-    await db.delete(guestTable).where(eq(guestTable.sessionToken, token));
-    cookieStore.delete(C_GUEST);
-
-    return { ok: true, userId };
+    await migrateGuestToUser();
+    return { ok: true, userId: res.user?.id };
 }
 
 export async function getCurrentUser() {
-    console.log('USER:', user);
     try {
-        // Wait for the headers to resolve
-        const h = new Headers(Object.fromEntries((await headers()).entries()));
+        const session = await auth.api.getSession({
+            headers: await headers()
+        })
 
-        const session = await auth.api.getSession({ headers: h });
-        if (session?.user) {
-            return {
-                id: session.user.id,
-                email: session.user.email,
-                name: session.user.name,
-                isGuest: false,
-            };
-        }
-
-        const guest = await guestSession();
-        if (guest) {
-            return {
-                id: guest.sessionToken,
-                email: null,
-                name: "Guest",
-                isGuest: true,
-            };
-        }
-        return null;
-    } catch (err) {
-        console.error("Error fetching current user:", err);
+        return session?.user ?? null;
+    } catch (e) {
+        console.log(e);
         return null;
     }
 }
 
+export async function signOut() {
+    await auth.api.signOut({ headers: {} });
+    return { ok: true };
+}
 
+export async function mergeGuestCartWithUserCart() {
+    await migrateGuestToUser();
+    return { ok: true };
+}
+
+async function migrateGuestToUser() {
+    const cookieStore = await cookies();
+    const token = (await cookieStore).get("guest_session")?.value;
+    if (!token) return;
+
+    await db.delete(guests).where(eq(guests.sessionToken, token));
+    (await cookieStore).delete("guest_session");
+}

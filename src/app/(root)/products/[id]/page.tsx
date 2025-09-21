@@ -1,15 +1,9 @@
 import Link from "next/link";
-// @ts-ignore
-import React from "react";
-import {
-    Component,
-    ReactNode,
-    Suspense,
-} from "react";
-import { Card } from "@/components";
-// import { Heart, ShoppingBag, Star } from "lucide-react";
-// import ColorSwatches from "@/components/ColorSwatches";
-import { getProduct, getProductReviews, getRecommendedProducts, type Review, type RecommendedProduct } from "@/lib/db/schema/products";
+import { Suspense } from "react";
+import { Card, CollapsibleSection, ProductGallery, SizePicker } from "@/components";
+import { Heart, ShoppingBag, Star } from "lucide-react";
+import ColorSwatches from "@/components/ColorSwatches";
+import { getProduct, getProductReviews, getRecommendedProducts, type Review, type RecommendedProduct } from "@/lib/actions/product";
 
 type GalleryVariant = { color: string; images: string[] };
 
@@ -33,17 +27,6 @@ function NotFoundBlock() {
             </div>
         </section>
     );
-}
-
-// FUNCTION COMPONENTS
-class CollapsibleSection extends Component<{ title: string, rightMeta: JSX.Element, children: ReactNode }> {
-    render() {
-        return null;
-    }
-}
-
-function Star(props: { className: string }) {
-    return null;
 }
 
 async function ReviewsSection({ productId }: { productId: string }) {
