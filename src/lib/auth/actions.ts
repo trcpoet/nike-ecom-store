@@ -4,10 +4,11 @@ import {cookies, headers} from "next/headers";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { guests } from "@/lib/db/schema/index";
+import { guest} from "@/lib/db/schema/index";
 import { and, eq, lt } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
+const IS_PROD = process.env.NODE_ENV === "production";
 const COOKIE_OPTIONS = {
     httpOnly: true as const,
     secure: true as const,
@@ -21,20 +22,14 @@ const passwordSchema = z.string().min(8).max(128);
 const nameSchema = z.string().min(1).max(100);
 
 export async function createGuestSession() {
-    const cookieStore = await cookies();
+    const cookieStore = cookies();
     const existing = (await cookieStore).get("guest_session");
-    if (existing?.value) {
-        return { ok: true, sessionToken: existing.value };
-    }
+    if (existing?.value) return { ok: true, sessionToken: existing.value };
+
 
     const sessionToken = randomUUID();
-    const now = new Date();
-    const expiresAt = new Date(now.getTime() + COOKIE_OPTIONS.maxAge * 1000);
-
-    await db.insert(guests).values({
-        sessionToken,
-        expiresAt,
-    });
+    const expiresAt = new Date(Date.now() + COOKIE_OPTIONS.maxAge * 1000);
+    await db.insert(guest).values({ sessionToken, expiresAt });
 
     (await cookieStore).set("guest_session", sessionToken, COOKIE_OPTIONS);
     return { ok: true, sessionToken };
@@ -48,8 +43,8 @@ export async function guestSession() {
     }
     const now = new Date();
     await db
-        .delete(guests)
-        .where(and(eq(guests.sessionToken, token), lt(guests.expiresAt, now)));
+        .delete(guest)
+        .where(and(eq(guest.sessionToken, token), lt(guest.expiresAt, now)));
 
     return { sessionToken: token };
 }
@@ -66,15 +61,15 @@ export async function signUp(formData: FormData) {
         email: formData.get('email') as string,
         password: formData.get('password') as string,
     }
-
     const data = signUpSchema.parse(rawData);
 
+    // ✅ forward request headers so the auth API can set/read cookies/CSRF, etc.
     const res = await auth.api.signUpEmail({
         body: {
             email: data.email,
             password: data.password,
-            name: data.name,
-        },
+            name: data.name
+        },  headers: await headers(),
     });
 
     await migrateGuestToUser();
@@ -90,15 +85,14 @@ export async function signIn(formData: FormData) {
     const rawData = {
         email: formData.get('email') as string,
         password: formData.get('password') as string,
-    }
-
+    };
     const data = signInSchema.parse(rawData);
 
     const res = await auth.api.signInEmail({
         body: {
             email: data.email,
-            password: data.password,
-        },
+            password: data.password
+        }, headers: await headers(), // ✅
     });
 
     await migrateGuestToUser();
@@ -119,7 +113,7 @@ export async function getCurrentUser() {
 }
 
 export async function signOut() {
-    await auth.api.signOut({ headers: {} });
+    await auth.api.signOut({ headers: await headers() });
     return { ok: true };
 }
 
@@ -129,10 +123,10 @@ export async function mergeGuestCartWithUserCart() {
 }
 
 async function migrateGuestToUser() {
-    const cookieStore = await cookies();
-    const token = (await cookieStore).get("guest_session")?.value;
+    const cookieStore = cookies();
+    const token = (await (cookieStore)).get("guest_session")?.value;
     if (!token) return;
 
-    await db.delete(guests).where(eq(guests.sessionToken, token));
+    await db.delete(guest).where(eq(guest.sessionToken, token));
     (await cookieStore).delete("guest_session");
 }
