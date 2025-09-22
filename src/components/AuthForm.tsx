@@ -52,8 +52,8 @@ export default function AuthForm({ mode, onSubmit }: Props) {
             <div className="flex items-center gap-4">
                 <hr className="h-px w-full border-0 bg-light-300" />
                 <span className="shrink-0 text-caption text-dark-700">
-          Or {mode === "sign-in" ? "sign in" : "sign up"} with
-        </span>
+                    Or {mode === "sign-in" ? "sign in" : "sign up"} with
+                </span>
                 <hr className="h-px w-full border-0 bg-light-300" />
             </div>
 

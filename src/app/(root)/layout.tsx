@@ -1,7 +1,7 @@
-import { ReactNode } from "react";
 import { Footer, Navbar } from "@/components";
+import React from "react";
 
-export default function RootGroupLayout({ children }: { children: ReactNode }) {
+export default function RootGroupLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
       <Navbar />

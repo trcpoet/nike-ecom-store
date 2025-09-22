@@ -5,10 +5,10 @@ export * from './verification';
 export * from './guest';
 //
 // export * from './addresses';
-// export * from './brands';
+export * from './brands';
 // export * from './categories';
 // export * from './collections';
-// export * from './products';
+export * from './products';
 // export * from './images';
 // export * from './variants';
 // export * from './reviews';

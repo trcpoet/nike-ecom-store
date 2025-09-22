@@ -1,77 +1,79 @@
-import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 
-export type BadgeTone = string;
+export type BadgeTone = "red" | "green" | "orange";
 
 export interface CardProps {
-  imageSrc: string;
-  imageAlt: string;
-  title: string;
-  subtitle?: string;
-  meta?: string;
-  price?: number | string;
-  badge?: { label: string; tone?: BadgeTone };
-  href?: string;
-  className?: string;
+    title: string;
+    description?: string;
+    subtitle?: string;
+    meta?: string | string[];
+    imageSrc: string;
+    imageAlt?: string;
+    price?: string | number;
+    href?: string;
+    badge?: { label: string; tone?: BadgeTone };
+    className?: string;
 }
 
+const toneToBg: Record<BadgeTone, string> = {
+    red: "text-[--color-red]",
+    green: "text-[--color-green]",
+    orange: "text-[--color-orange]",
+};
 
 export default function Card({
-  imageSrc,
-  imageAlt,
-  title,
-  subtitle,
-  meta,
-  price,
-  badge,
-  href,
-  className = "",
-}: CardProps) {
-  const content = (
-    <article
-      className={`group rounded-xl bg-light-100 ring-1 ring-light-300 transition-colors hover:ring-dark-500  ${className}`}
-    >
-        <div className="relative aspect-square overflow-hidden rounded-t-xl bg-light-200">
-          <Image
-            src={imageSrc}
-            alt={imageAlt}
-            fill
-            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-            className="object-cover transition-transform duration-300 ease-out group-hover:scale-105"
-            priority={false}
-          />
-        </div>
-      <div className="px-4 pt-4 bg-white">
-        <div className="mb-1 flex items-center justify-between">
-          <h3 className="text-[var(--text-heading-3)] font-medium text-[var(-dark-900)]">
-            {title}
-          </h3>
-          {price !== undefined && price !== null ? (
-            <span className="text-[var(--text-heading-3)] font-medium text-[var(-dark-900)]">
-              {typeof price === "number" ? `$${price.toFixed(2)}` : price}
-            </span>
-          ) : null}
-        </div>
-        {subtitle ? (
-          <p className="text-[var(--text-body)]  mt-1">{subtitle}</p>
-        ) : null}
-        {meta ? (
-          <p className="text-[var(--text-body)] ">{meta}</p>
-        ) : null}
-      </div>
-    </article>
-  );
+     title,
+     description,
+     subtitle,
+     meta,
+     imageSrc,
+     imageAlt = title,
+     price,
+     href,
+     badge,
+     className = "",
+ }: CardProps) {
+    const displayPrice =
+        price === undefined ? undefined : typeof price === "number" ? `$${price.toFixed(2)}` : price;
+    const content = (
+        <article
+            className={`group rounded-xl bg-light-100 ring-1 ring-light-300 transition-colors hover:ring-dark-500 ${className}`}
+        >
+            <div className="relative aspect-square overflow-hidden rounded-t-xl bg-light-200">
+                <Image
+                    src={imageSrc}
+                    alt={imageAlt}
+                    fill
+                    sizes="(min-width: 1280px) 360px, (min-width: 1024px) 300px, (min-width: 640px) 45vw, 90vw"
+                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                />
+            </div>
+            <div className="p-4">
+                <div className="mb-1 flex items-baseline justify-between gap-3">
+                    <h3 className="text-heading-3 text-dark-900">{title}</h3>
+                    {displayPrice && <span className="text-body-medium text-dark-900">{displayPrice}</span>}
+                </div>
+                {description && <p className="text-body text-dark-700">{description}</p>}
+                {subtitle && <p className="text-body text-dark-700">{subtitle}</p>}
+                {meta && (
+                    <p className="mt-1 text-caption text-dark-700">
+                        {Array.isArray(meta) ? meta.join(" • ") : meta}
+                    </p>
+                )}
+            </div>
+        </article>
+    );
 
-  return href ? (
-    <Link
-      href={href}
-      aria-label={title}
-      className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(-dark-900)]"
-    >
-      {content}
-    </Link>
-  ) : (
-    content
-  );
+    return href ? (
+        <Link
+            href={href}
+            aria-label={title}
+            className="block rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-[--color-dark-500]"
+        >
+            {content}
+        </Link>
+    ) : (
+        content
+    );
 }

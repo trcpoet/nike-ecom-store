@@ -13,12 +13,12 @@ export const session = pgTable('session', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
 
-// export const sessionRelations = relations(session, ({ one }) => ({
-//   user: one(user, {
-//     fields: [session.userId],
-//     references: [user.id],
-//   }),
-// }));
-//
-// export type Session = typeof session.$inferSelect;
-// export type NewSession = typeof session.$inferInsert;
+export const sessionRelations = relations(session, ({ one }) => ({
+  user: one(user, {
+    fields: [session.userId],
+    references: [user.id],
+  }),
+}));
+
+export type Session = typeof session.$inferSelect;
+export type NewSession = typeof session.$inferInsert;

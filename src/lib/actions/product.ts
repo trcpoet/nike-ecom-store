@@ -13,7 +13,7 @@ import {
     products,
     sizes,
     colors,
-    users,
+    user,
     reviews,
     type SelectProduct,
     type SelectVariant,
@@ -405,11 +405,11 @@ export async function getProductReviews(productId: string): Promise<Review[]> {
             rating: reviews.rating,
             comment: reviews.comment,
             createdAt: reviews.createdAt,
-            authorName: users.name,
-            authorEmail: users.email,
+            authorName: user.name,
+            authorEmail: user.email,
         })
         .from(reviews)
-        .innerJoin(users, eq(users.id, reviews.userId))
+        .innerJoin(user, eq(user.id, reviews.userId))
         .where(eq(reviews.productId, productId))
         .orderBy(desc(reviews.createdAt))
         .limit(10);
@@ -459,10 +459,10 @@ export async function getRecommendedProducts(productId: string): Promise<Recomme
         .as("pi");
 
     const priority = sql<number>`
-    (case when ${products.categoryId} is not null and ${products.categoryId} = ${b.categoryId} then 1 else 0 end) * 3 +
+            (case when ${products.categoryId} is not null and ${products.categoryId} = ${b.categoryId} then 1 else 0 end) * 3 +
     (case when ${products.brandId} is not null and ${products.brandId} = ${b.brandId} then 1 else 0 end) * 2 +
-    (case when ${products.genderId} is not null and ${products.genderId} = ${b.genderId} then 1 else 0 end) * 1
-  `;
+            (case when ${products.genderId} is not null and ${products.genderId} = ${b.genderId} then 1 else 0 end) * 1
+    `;
 
     const rows = await db
         .select({

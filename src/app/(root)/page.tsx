@@ -42,9 +42,6 @@ const products = [
 
 const Home = async () => {
     const user = await getCurrentUser();
-
-
-
     console.log('USER:', user);
 
 
@@ -62,7 +59,6 @@ const Home = async () => {
                             subtitle={p.subtitle}
                             meta={p.meta}
                             imageSrc={p.imageSrc}
-                            imageAlt={p.title}
                             price={p.price}
                             badge={p.badge}
                             href={`/products/${p.id}`}
