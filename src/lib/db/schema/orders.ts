@@ -1,4 +1,4 @@
-import { pgEnum, pgTable, uuid, numeric, timestamp, integer } from 'drizzle-orm/pg-core';
+import { pgEnum, pgTable, uuid, numeric, timestamp, integer, varchar } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import { addresses } from './addresses';
 import { productVariants } from './variants';
@@ -31,7 +31,7 @@ export const payments = pgTable('payments', {
   method: paymentMethodEnum('method').notNull(),
   status: paymentStatusEnum('status').notNull(),
   paidAt: timestamp('paid_at'),
-  transactionId: uuid('transaction_id' as any).$type<string | null>(),
+  transactionId: varchar('transaction_id', { length: 255 }),
 });
 
 export const ordersRelations = relations(orders, ({ many, one }) => ({

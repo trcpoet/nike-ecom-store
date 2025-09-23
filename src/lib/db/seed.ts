@@ -1,5 +1,5 @@
 import { db } from './index';
-import { and, eq } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { products, brands, categories, genders, colors, sizes, productVariants, productImages, collections, productCollections } from './schema';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -58,13 +58,14 @@ export async function seed() {
     const publicShoesDir = path.join(process.cwd(), 'public', 'shoes');
     const staticUploadsDir = path.join(process.cwd(), 'public', 'static', 'uploads');
     fs.mkdirSync(staticUploadsDir, { recursive: true });
-    const localImages = fs.existsSync(publicShoesDir) ? fs.readdirSync(publicShoesDir).filter(f => /\.(png|jpe?g|webp)$/i.test(f)) : [];
+    const localImages = fs.existsSync(publicShoesDir) ? fs.readdirSync(publicShoesDir).filter(f => /\.(png|jpe?g|webp|avif)$/i.test(f)) : [];
     const imageUrl = (i: number) => {
-      if (localImages[i % localImages.length]) {
-        const src = path.join(publicShoesDir, localImages[i % localImages.length]);
-        const dst = path.join(staticUploadsDir, localImages[i % localImages.length]);
+      if (localImages.length) {
+        const fname = localImages[i % localImages.length];
+        const src = path.join(publicShoesDir, fname);
+        const dst = path.join(staticUploadsDir, fname);
         if (!fs.existsSync(dst)) fs.copyFileSync(src, dst);
-        return `/static/uploads/${localImages[i % localImages.length]}`;
+        return `/static/uploads/${fname}`;
       }
       return `https://static.nike.com/a/images/f_auto,q_auto:eco/w_${600 + (i % 5) * 100}/placeholder.png`;
     };
@@ -103,8 +104,8 @@ export async function seed() {
           variants.push(v);
 
           await db.insert(productImages).values([
-            { productId: p.id, variantId: v.id, url: imageUrl(i), sortOrder: 0 as any, isPrimary: true },
-            { productId: p.id, variantId: v.id, url: imageUrl(i + 1), sortOrder: 1 as any, isPrimary: false },
+            { productId: p.id, variantId: v.id, url: imageUrl(i), sortOrder: 0, isPrimary: true },
+            { productId: p.id, variantId: v.id, url: imageUrl(i + 1), sortOrder: 1, isPrimary: false },
           ]);
         }
       }
