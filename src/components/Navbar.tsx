@@ -1,98 +1,88 @@
 "use client";
 
-import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useCartStore } from "@/store/cart";
+import { useState } from "react";
 
 const NAV_LINKS = [
-    { label: "Men", href: "/men" },
-    { label: "Women", href: "/women" },
-    { label: "Kids", href: "/kids" },
+    { label: "Men", href: "/products?gender=men" },
+    { label: "Women", href: "/products?gender=women" },
+    { label: "Kids", href: "/products?gender=unisex" },
     { label: "Collections", href: "/collections" },
     { label: "Contact", href: "/contact" },
-]
+] as const;
 
 export default function Navbar() {
-  const [open, setOpen] = useState(false);
-  const total = useCartStore((s) => s.getTotalItems());
+    const [open, setOpen] = useState(false);
 
-  return (
-    <header className="w-full border-b border-[#e5e5e5] bg-white sticky top-0 z-50">
-      <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center">
-        <div className="flex items-center gap-6">
-          <Link href="/" aria-label="Home" className="flex items-center">
-            <Image src="/logo.svg" alt="Nike" width={36} height={36} priority className="invert-100" />
-          </Link>
-        </div>
-
-        <div className="hidden md:flex flex-1 items-center justify-center gap-8">
-          {NAV_LINKS.map((item) => (
-            <Link
-              key={item.label}
-              href={item.href}
-              className="text-[var(--color-dark-900)] text-[var(--text-body)] font-medium hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-[var(--color-dark-900)] rounded"
+    return (
+        <header className="sticky top-0 z-50 bg-light-100">
+            <nav
+                className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8"
+                aria-label="Primary"
             >
-              {item.label}
-            </Link>
-          ))}
-        </div>
+                <Link href="/" aria-label="Nike Home" className="flex items-center">
+                    <Image src="/logo.svg" alt="Nike" width={28} height={28} priority className="invert" />
+                </Link>
 
-        <div className="hidden md:flex items-center gap-6 ml-auto">
-          <button
-            type="button"
-            className="text-[var(--color-dark-900)] text-[var(--text-body)] hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-[var(--color-dark-900)] rounded px-2 py-1"
-          >
-            Search
-          </button>
-          <Link
-            href="#"
-            className="text-[var(--color-dark-900)] text-[var(--text-body)] font-medium hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-[var(--color-dark-900)] rounded px-2 py-1"
-          >
-            My Cart ({total})
-          </Link>
-        </div>
+                <ul className="hidden items-center gap-8 md:flex">
+                    {NAV_LINKS.map((l) => (
+                        <li key={l.href}>
+                            <Link
+                                href={l.href}
+                                className="text-body text-dark-900 transition-colors hover:text-dark-700"
+                            >
+                                {l.label}
+                            </Link>
+                        </li>
+                    ))}
+                </ul>
 
-        <button
-          className="md:hidden inline-flex items-center justify-center w-10 h-10 rounded focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-dark-900)]"
-          aria-label="Open menu"
-          aria-expanded={open}
-          aria-controls="mobile-menu"
-          onClick={() => setOpen((v) => !v)}
-          type="button"
-        >
-          <span className="sr-only">Menu</span>
-          <span className="relative block w-6 h-[2px] bg-black before:content-[''] before:absolute before:-top-2 before:left-0 before:w-6 before:h-[2px] before:bg-black after:content-[''] after:absolute after:top-2 after:left-0 after:w-6 after:h-[2px] after:bg-black" />
-        </button>
-      </nav>
+                <div className="hidden items-center gap-6 md:flex">
+                    <button className="text-body text-dark-900 transition-colors hover:text-dark-700">
+                        Search
+                    </button>
+                    <button className="text-body text-dark-900 transition-colors hover:text-dark-700">
+                        My Cart (2)
+                    </button>
+                </div>
 
-      <div
-        id="mobile-menu"
-        className={`md:hidden ${open ? "block" : "hidden"} border-t border-[#e5e5e5] bg-white`}
-      >
-        <div className="px-4 pt-3 pb-6 space-y-3">
-          {NAV_LINKS.map((item) => (
-            <Link
-              key={item.label}
-              href={item.href}
-              className="block text-[var(--color-dark-900)] text-[var(--text-body)] font-medium py-1.5"
+                <button
+                    type="button"
+                    className="inline-flex items-center justify-center rounded-md p-2 md:hidden"
+                    aria-controls="mobile-menu"
+                    aria-expanded={open}
+                    onClick={() => setOpen((v) => !v)}
+                >
+                    <span className="sr-only">Toggle navigation</span>
+                    <span className="mb-1 block h-0.5 w-6 bg-dark-900"></span>
+                    <span className="mb-1 block h-0.5 w-6 bg-dark-900"></span>
+                    <span className="block h-0.5 w-6 bg-dark-900"></span>
+                </button>
+            </nav>
+
+            <div
+                id="mobile-menu"
+                className={`border-t border-light-300 md:hidden ${open ? "block" : "hidden"}`}
             >
-              {item.label}
-            </Link>
-          ))}
-          <div className="flex items-center justify-between pt-2">
-            <button
-              type="button"
-              className="text-[var(--color-dark-900)] text-[var(--text-body)]"
-            >
-              Search
-            </button>
-            <Link href="#" className="font-medium">
-              My Cart ({total})
-            </Link>
-          </div>
-        </div>
-      </div>
-    </header>
-  );
+                <ul className="space-y-2 px-4 py-3">
+                    {NAV_LINKS.map((l) => (
+                        <li key={l.href}>
+                            <Link
+                                href={l.href}
+                                className="block py-2 text-body text-dark-900 hover:text-dark-700"
+                                onClick={() => setOpen(false)}
+                            >
+                                {l.label}
+                            </Link>
+                        </li>
+                    ))}
+                    <li className="flex items-center justify-between pt-2">
+                        <button className="text-body">Search</button>
+                        <button className="text-body">My Cart (2)</button>
+                    </li>
+                </ul>
+            </div>
+        </header>
+    );
 }

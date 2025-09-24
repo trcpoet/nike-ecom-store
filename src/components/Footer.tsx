@@ -1,66 +1,90 @@
-import React from "react";
+
 import Image from "next/image";
 import Link from "next/link";
 
-const footerCols = [
-  { title: "Featured", links: ["Air Force 1", "Huarache", "Air Max 90", "Air Max 95"] },
-  { title: "Shoes", links: ["All Shoes", "Custom Shoes", "Jordan Shoes", "Running Shoes"] },
-  { title: "Clothing", links: ["All Clothing", "Modest Wear", "Hoodies & Pullovers", "Shirts & Tops"] },
-  { title: "Kids'", links: ["Infant & Toddler Shoes", "Kids' Shoes", "Kids' Jordan Shoes", "Kids' Basketball Shoes"] },
-];
+const columns = [
+    {
+        title: "Featured",
+        links: ["Air Force 1", "Huarache", "Air Max 90", "Air Max 95"],
+    },
+    {
+        title: "Shoes",
+        links: ["All Shoes", "Custom Shoes", "Jordan Shoes", "Running Shoes"],
+    },
+    {
+        title: "Clothing",
+        links: ["All Clothing", "Modest Wear", "Hoodies & Pullovers", "Shirts & Tops"],
+    },
+    {
+        title: "Kids'",
+        links: ["Infant & Toddler Shoes", "Kids' Shoes", "Kids' Jordan Shoes", "Kids' Basketball Shoes"],
+    },
+] as const;
 
 export default function Footer() {
-  return (
-    <footer className="bg-black text-[var(--color-dark-700)] mt-24">
-      <nav aria-label="Footer" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-10">
-          <div className="flex items-start">
-            <Image src="/logo.svg" alt="Nike" width={56} height={56} />
-          </div>
-          {footerCols.map((col) => (
-            <div key={col.title}>
-              <h4 className="text-[var(--text-heading-3)] text-white mb-4">{col.title}</h4>
-              <ul className="space-y-2">
-                {col.links.map((l) => (
-                  <li key={l}>
-                    <Link href="#" className="hover:text-white transition-colors">
-                      {l}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+    return (
+        <footer className="bg-dark-900 text-light-100">
+            <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+                <div className="grid grid-cols-1 items-start gap-8 md:grid-cols-12">
+                    <div className="flex items-start md:col-span-3">
+                        <Image src="/logo.svg" alt="Nike" width={48} height={48} />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-8 sm:grid-cols-4 md:col-span-7">
+                        {columns.map((col) => (
+                            <div key={col.title}>
+                                <h4 className="mb-4 text-heading-3">{col.title}</h4>
+                                <ul className="space-y-3">
+                                    {col.links.map((l) => (
+                                        <li key={l}>
+                                            <Link
+                                                href="#"
+                                                className="text-body text-light-400 hover:text-light-300"
+                                            >
+                                                {l}
+                                            </Link>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="flex gap-4 md:col-span-2 md:justify-end">
+                        {[
+                            { src: "/x.svg", alt: "X" },
+                            { src: "/facebook.svg", alt: "Facebook" },
+                            { src: "/instagram.svg", alt: "Instagram" },
+                        ].map((s) => (
+                            <Link
+                                key={s.alt}
+                                href="#"
+                                aria-label={s.alt}
+                                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-light-100"
+                            >
+                                <Image src={s.src} alt={s.alt} width={18} height={18} />
+                            </Link>
+                        ))}
+                    </div>
+                </div>
             </div>
-          ))}
-        </div>
 
-        <div className="mt-10 flex flex-col-reverse gap-6 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-2 text-white/90">
-            <Image src="/globe.svg" alt="" width={16} height={16} />
-            <span className="text-[var(--text-caption)]">Croatia</span>
-            <span className="ml-4 text-[var(--text-caption)] text-white/70">
-              © 2025 Nike, Inc. All Rights Reserved
-            </span>
-          </div>
-
-          <div className="flex items-center gap-4">
-            {["/x.svg", "/facebook.svg", "/instagram.svg"].map((src) => (
-              <Link key={src} href="#" aria-label={src.replace("/", "").split(".")[0]}>
-                <span className="inline-flex w-10 h-10 rounded-full bg-white items-center justify-center">
-                  <Image src={src} alt="" width={18} height={18} />
-                </span>
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        <div className="mt-8 flex flex-col md:flex-row md:items-center md:justify-center gap-6">
-          {["Guides", "Terms of Sale", "Terms of Use", "Nike Privacy Policy"].map((i) => (
-            <Link key={i} href="#" className="hover:text-white text-[var(--text-footnote)]">
-              {i}
-            </Link>
-          ))}
-        </div>
-      </nav>
-    </footer>
-  );
+            <div className="border-t border-white/10">
+                <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 py-4 text-light-400 sm:flex-row sm:px-6 lg:px-8">
+                    <div className="flex items-center gap-3 text-caption">
+                        <Image src="/globe.svg" alt="" width={16} height={16} />
+                        <span>Croatia</span>
+                        <span>© 2025 Nike, Inc. All Rights Reserved</span>
+                    </div>
+                    <ul className="flex items-center gap-6 text-caption">
+                        {["Guides", "Terms of Sale", "Terms of Use", "Nike Privacy Policy"].map((t) => (
+                            <li key={t}>
+                                <Link href="#">{t}</Link>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            </div>
+        </footer>
+    );
 }
