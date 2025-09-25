@@ -6,9 +6,7 @@ import { getAllProducts } from "@/lib/actions/product";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
-export default async function ProductsPage({
-                                               searchParams,
-                                           }: {
+export default async function ProductsPage({searchParams, }: {
     searchParams: Promise<SearchParams>;
 }) {
     const sp = await searchParams;
