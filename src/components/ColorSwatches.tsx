@@ -13,7 +13,7 @@ export interface ColorSwatchesProps {
 }
 
 function firstValidImage(images: string[]) {
-    return images.find((s) => typeof s === "string" && s.trim().length > 0);
+    return images.find((s) => s.trim().length > 0);
 }
 
 export default function ColorSwatches({ productId, variants, className = "" }: ColorSwatchesProps) {
