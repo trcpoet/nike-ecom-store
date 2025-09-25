@@ -20,6 +20,7 @@ export const cartItems = pgTable('cart_items', {
     quantity: integer('quantity').notNull().default(1),
 });
 
+//relations(baseTable, (helpers) => ({ ... }))
 export const cartsRelations = relations(carts, ({ many, one }) => ({
     user: one(users, {
         fields: [carts.userId],
@@ -33,13 +34,13 @@ export const cartsRelations = relations(carts, ({ many, one }) => ({
 }));
 
 export const cartItemsRelations = relations(cartItems, ({ one }) => ({
-    cart: one(carts, {
-        fields: [cartItems.cartId],
-        references: [carts.id],
+    cart: one(carts, { //relation named cart, from cartItems table to carts
+        fields: [cartItems.cartId], //This is the “arrow” on the cart item that says, “I belong to cart with this ID.”
+        references: [carts.id], //This is where the arrow points: the id of the real cart.
     }),
-    variant: one(productVariants, {
-        fields: [cartItems.productVariantId],
-        references: [productVariants.id],
+    variant: one(productVariants, { //Each cart item is one specific version of a product (like size/color). Again, exactly one.
+        fields: [cartItems.productVariantId], //Another arrow: from the cart item to the exact product version it represents.
+        references: [productVariants.id], //Another arrow: from the cart item to the exact product version it represents.
     }),
 }));
 
