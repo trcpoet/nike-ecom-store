@@ -57,7 +57,7 @@ export default function Navbar() {
                     <span className="sr-only">Toggle navigation</span>
                     <span className="mb-1 block h-0.5 w-6 bg-dark-900"></span>
                     <span className="mb-1 block h-0.5 w-6 bg-dark-900"></span>
-                    <span className="block h-0.5 w-6 bg-dark-900"></span>
+                    <span className="mb-1 block h-0.5 w-6 bg-dark-900"></span>
                 </button>
             </nav>
 
