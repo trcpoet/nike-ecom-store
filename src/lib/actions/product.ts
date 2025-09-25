@@ -43,6 +43,15 @@ export type GetAllProductsResult = {
 };
 
 export async function getAllProducts(filters: NormalizedProductFilters): Promise<GetAllProductsResult> {
+
+    const genderSlugs  = filters.genderSlugs  ?? [];
+    const brandSlugs   = filters.brandSlugs   ?? [];
+    const categorySlugs= filters.categorySlugs?? [];
+    const sizeSlugs    = filters.sizeSlugs    ?? [];
+    const colorSlugs   = filters.colorSlugs   ?? [];
+    const priceRanges  = filters.priceRanges  ?? [];
+
+
     const conds: SQL[] = [eq(products.isPublished, true)];
 
     if (filters.search) {
@@ -50,16 +59,16 @@ export async function getAllProducts(filters: NormalizedProductFilters): Promise
         conds.push(or(ilike(products.name, pattern), ilike(products.description, pattern))!);
     }
 
-    if (filters?.genderSlugs?.length) {
-        conds.push(inArray(genders.slug, filters.genderSlugs));
+    if (genderSlugs.length) {
+        conds.push(inArray(genders.slug, genderSlugs));
     }
 
-    if (filters?.brandSlugs?.length) {
-        conds.push(inArray(brands.slug, filters.brandSlugs));
+    if (brandSlugs.length) {
+        conds.push(inArray(brands.slug, brandSlugs));
     }
 
-    if (filters?.categorySlugs?.length) {
-        conds.push(inArray(categories.slug, filters.categorySlugs));
+    if (categorySlugs.length) {
+        conds.push(inArray(categories.slug, categorySlugs));
     }
 
     const hasSize = filters?.sizeSlugs?.length || 0 > 0;
@@ -68,31 +77,32 @@ export async function getAllProducts(filters: NormalizedProductFilters): Promise
 
     const variantConds: SQL[] = [];
     if (hasSize) {
-        variantConds.push(inArray(productVariants.sizeId, db
-            .select({ id: sizes.id })
+        // ➜ one-column subquery when using as 2nd arg of inArray
+        const sizeIdsSubq = db
+            .select({ value: sizes.id })
             .from(sizes)
-            .where(inArray(sizes.slug, filters.sizeSlugs))));
+            .where(inArray(sizes.slug, sizeSlugs));
+        variantConds.push(inArray(productVariants.sizeId, sizeIdsSubq));
     }
     if (hasColor) {
-        variantConds.push(inArray(productVariants.colorId, db
-            .select({ id: colors.id })
+        const colorIdsSubq = db
+            .select({ value: colors.id })
             .from(colors)
-            .where(inArray(colors.slug, filters.colorSlugs))));
+            .where(inArray(colors.slug, colorSlugs));
+        variantConds.push(inArray(productVariants.colorId, colorIdsSubq));
     }
     if (hasPrice) {
         const priceBounds: SQL[] = [];
-        if (filters.priceRanges.length) {
-            for (const [min, max] of filters.priceRanges) {
+
+        if (priceRanges.length) {
+            for (const [min, max] of priceRanges) {
                 const subConds: SQL[] = [];
-                if (min !== undefined) {
-                    subConds.push(sql`(${productVariants.price})::numeric >= ${min}`);
-                }
-                if (max !== undefined) {
-                    subConds.push(sql`(${productVariants.price})::numeric <= ${max}`);
-                }
+                if (min !== undefined) subConds.push(sql`(${productVariants.price})::numeric >= ${min}`);
+                if (max !== undefined) subConds.push(sql`(${productVariants.price})::numeric <= ${max}`);
                 if (subConds.length) priceBounds.push(and(...subConds)!);
             }
         }
+
         if (filters.priceMin !== undefined || filters.priceMax !== undefined) {
             const subConds: SQL[] = [];
             if (filters.priceMin !== undefined) subConds.push(sql`(${productVariants.price})::numeric >= ${filters.priceMin}`);
@@ -115,7 +125,8 @@ export async function getAllProducts(filters: NormalizedProductFilters): Promise
         .from(productVariants)
         .where(variantConds.length ? and(...variantConds) : undefined)
         .as("v");
-    const imagesJoin = hasColor
+
+    const imagesJoin = colorSlugs.length
         ? db
             .select({
                 productId: productImages.productId,
@@ -127,7 +138,7 @@ export async function getAllProducts(filters: NormalizedProductFilters): Promise
             .where(
                 inArray(
                     productVariants.colorId,
-                    db.select({ id: colors.id }).from(colors).where(inArray(colors.slug, filters.colorSlugs))
+                    db.select({ value: colors.id }).from(colors).where(inArray(colors.slug, colorSlugs))
                 )
             )
             .as("pi")
@@ -158,9 +169,11 @@ export async function getAllProducts(filters: NormalizedProductFilters): Promise
                 ? desc(sql`max(${variantJoin.price})`)
                 : desc(products.createdAt);
 
-    const page = Math.max(1, filters.page);
-    const limit = Math.max(1, Math.min(filters.limit, 6));
+    const page = Math.max(1, filters.page ?? 1);
+    const limitInput = filters.limit ?? 6;
+    const limit = Math.max(1, Math.min(limitInput, 6));
     const offset = (page - 1) * limit;
+
 
     const rows = await db
         .select({
