@@ -22,11 +22,11 @@ function isValidSrc(src: string | undefined | null) {
 }
 
 export default function ProductGallery({
-                                           productId,
-                                           variants,
-                                           initialVariantIndex = 0,
-                                           className = "",
-                                       }: ProductGalleryProps) {
+   productId,
+   variants,
+   initialVariantIndex = 0,
+   className = "",
+}: ProductGalleryProps) {
     const validVariants = useMemo(
         () => variants.filter((v) => Array.isArray(v.images) && v.images.some(isValidSrc)),
         [variants]
