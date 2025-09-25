@@ -51,7 +51,7 @@ const Home = async () => {
                 <h2 id="latest" className="mb-6 text-heading-3 text-dark-900">
                     Latest shoes
                 </h2>
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 pb-6">
                     {products.map((p) => (
                         <Card
                             key={p.id}
