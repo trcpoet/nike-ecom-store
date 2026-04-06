@@ -11,7 +11,7 @@ export default function ConfirmationPage() {
                 </div>
                 <h1 className="text-heading-2 text-dark-900">Order Placed!</h1>
                 <p className="text-body text-dark-700 max-w-sm">
-                    Thank you for your order. You'll receive a confirmation email shortly.
+                    Thank you for your order. You&apos;ll receive a confirmation email shortly.
                 </p>
                 <Link
                     href="/products"
