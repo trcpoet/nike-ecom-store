@@ -100,6 +100,10 @@ export default function ProductOptions({ productId, productName, colorVariants }
 
             {/* Color swatches */}
             {colorVariants.length > 1 && (
+                <div className="flex flex-col gap-3">
+                <p className="text-body-medium text-dark-900">
+                    Color: <span className="font-normal text-dark-700">{selectedColor?.color}</span>
+                </p>
                 <div className="flex flex-wrap gap-3" role="listbox" aria-label="Choose color">
                     {colorVariants.map((v, i) => {
                         const src = firstValidImage(v.images);
@@ -135,6 +139,7 @@ export default function ProductOptions({ productId, productName, colorVariants }
                             </button>
                         );
                     })}
+                </div>
                 </div>
             )}
 

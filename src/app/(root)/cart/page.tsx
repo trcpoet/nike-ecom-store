@@ -92,9 +92,12 @@ export default function CartPage() {
                         <span>Total</span>
                         <span>${total.toFixed(2)}</span>
                     </div>
-                    <button className="rounded-full bg-dark-900 px-6 py-4 text-body-medium text-light-100 transition hover:opacity-90">
+                    <Link
+                        href="/checkout"
+                        className="rounded-full bg-dark-900 px-6 py-4 text-body-medium text-light-100 transition hover:opacity-90 text-center"
+                    >
                         Checkout
-                    </button>
+                    </Link>
                 </div>
             </div>
         </main>

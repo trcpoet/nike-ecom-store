@@ -4,16 +4,8 @@ import { Card, CollapsibleSection, ProductGallery } from "@/components";
 import { Star } from "lucide-react";
 import ProductOptions, { type ColorVariant } from "@/components/ProductOptions";
 import { getProduct, getProductReviews, getRecommendedProducts, type Review, type RecommendedProduct } from "@/lib/actions/product";
-import { db } from "@/lib/db";
-import { products } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
 
-export const revalidate = 3600; // re-fetch at most once per hour
-
-export async function generateStaticParams() {
-    const rows = await db.select({ id: products.id }).from(products).where(eq(products.isPublished, true));
-    return rows.map((r) => ({ id: r.id }));
-}
+export const revalidate = 3600;
 
 type GalleryVariant = { color: string; images: string[] };
 
