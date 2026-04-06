@@ -1,18 +1,11 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { Card, CollapsibleSection, ProductGallery, SizePicker } from "@/components";
-import type { SizeOption } from "@/components/SizePicker";
-import { Heart, Star } from "lucide-react";
-import ColorSwatches from "@/components/ColorSwatches";
-import ProductActions from "@/components/ProductActions";
+import { Card, CollapsibleSection, ProductGallery } from "@/components";
+import { Star } from "lucide-react";
+import ProductOptions, { type ColorVariant } from "@/components/ProductOptions";
 import { getProduct, getProductReviews, getRecommendedProducts, type Review, type RecommendedProduct } from "@/lib/actions/product";
 
-type GalleryVariant = { color: string; images: string[]; available: boolean };
-
-function formatPrice(price: number | null | undefined) {
-    if (price === null || price === undefined) return undefined;
-    return `$${price.toFixed(2)}`;
-}
+type GalleryVariant = { color: string; images: string[] };
 
 function NotFoundBlock() {
     return (
@@ -121,57 +114,39 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         })
         .map((img) => img.url);
 
-    const colorMap = new Map<string, GalleryVariant>();
+    // Build per-color variant data with per-size availability and pricing
+    const colorVariantsMap = new Map<string, ColorVariant>();
     for (const v of variants) {
         const colorName = v.color?.name || "Default";
         const inStock = Number(v.inStock) > 0;
-        const existing = colorMap.get(colorName);
+        const price = Number(v.price);
+        const salePrice = v.salePrice ? Number(v.salePrice) : null;
+
+        const existing = colorVariantsMap.get(colorName);
         if (!existing) {
             const imgs = images.filter((img) => img.variantId === v.id).map((img) => img.url);
-            colorMap.set(colorName, {
+            colorVariantsMap.set(colorName, {
                 color: colorName,
                 images: imgs.length ? imgs : fallbackImages,
                 available: inStock,
+                sizes: v.size ? [{ name: v.size.name, available: inStock, sortOrder: v.size.sortOrder ?? 0, price, salePrice }] : [],
             });
-        } else if (inStock) {
-            existing.available = true;
+        } else {
+            if (inStock) existing.available = true;
+            if (v.size) {
+                const existingSize = existing.sizes.find((s) => s.name === v.size!.name);
+                if (!existingSize) {
+                    existing.sizes.push({ name: v.size.name, available: inStock, sortOrder: v.size.sortOrder ?? 0, price, salePrice });
+                } else if (inStock) {
+                    existingSize.available = true;
+                }
+            }
         }
     }
-    const galleryVariants: GalleryVariant[] = [...colorMap.values()].filter((gv) => gv.images.length > 0);
+    const colorVariants: ColorVariant[] = [...colorVariantsMap.values()].filter((cv) => cv.images.length > 0);
+    const galleryVariants: GalleryVariant[] = colorVariants.map(({ color, images }) => ({ color, images }));
 
-    // Build size options with stock availability (any variant with that size in stock = available)
-    const sizeStockMap = new Map<string, { available: boolean; sortOrder: number }>();
-    for (const v of variants) {
-        if (!v.size) continue;
-        const name = v.size.name;
-        const inStock = Number(v.inStock) > 0;
-        const existing = sizeStockMap.get(name);
-        if (!existing) {
-            sizeStockMap.set(name, { available: inStock, sortOrder: v.size.sortOrder ?? 0 });
-        } else if (inStock) {
-            existing.available = true;
-        }
-    }
-    const availableSizes: SizeOption[] = [...sizeStockMap.entries()]
-        .sort((a, b) => a[1].sortOrder - b[1].sortOrder)
-        .map(([name, { available }]) => ({ name, available }));
-
-    const defaultVariant =
-        variants.find((v) => v.id === product.defaultVariantId) || variants[0];
-
-    const basePrice = defaultVariant ? Number(defaultVariant.price) : null;
-    const salePrice = defaultVariant?.salePrice ? Number(defaultVariant.salePrice) : null;
-
-    const displayPrice = salePrice !== null && !Number.isNaN(salePrice) ? salePrice : basePrice;
-    const compareAt = salePrice !== null && !Number.isNaN(salePrice) ? basePrice : null;
-
-    const discount =
-        compareAt && displayPrice && compareAt > displayPrice
-            ? Math.round(((compareAt - displayPrice) / compareAt) * 100)
-            : null;
-
-    const subtitle =
-        product.gender?.label ? `${product.gender.label} Shoes` : undefined;
+    const subtitle = product.gender?.label ? `${product.gender.label} Shoes` : undefined;
 
     return (
         <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -191,35 +166,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                         {subtitle && <p className="text-body text-dark-700">{subtitle}</p>}
                     </header>
 
-                    <div className="flex items-center gap-3">
-                        <p className="text-lead text-dark-900">{formatPrice(displayPrice)}</p>
-                        {compareAt && (
-                            <>
-                                <span className="text-body text-dark-700 line-through">{formatPrice(compareAt)}</span>
-                                {discount !== null && (
-                                    <span className="rounded-full border border-light-300 px-2 py-1 text-caption text-[--color-green]">
-                    {discount}% off
-                  </span>
-                                )}
-                            </>
-                        )}
-                    </div>
-
-                    <ColorSwatches productId={product.id} variants={galleryVariants} />
-                    <SizePicker productId={product.id} sizes={availableSizes.length ? availableSizes : undefined}  />
-
-                    <div className="flex flex-col gap-3">
-                        <ProductActions
-                            productId={product.id}
-                            productName={product.name}
-                            price={displayPrice ?? 0}
-                            galleryVariants={galleryVariants}
-                        />
-                        <button className="flex items-center justify-center gap-2 rounded-full border border-light-300 px-6 py-4 text-body-medium text-dark-900 transition hover:border-dark-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-[--color-dark-500]">
-                            <Heart className="h-5 w-5" />
-                            Favorite
-                        </button>
-                    </div>
+                    <ProductOptions
+                        productId={product.id}
+                        productName={product.name}
+                        colorVariants={colorVariants}
+                    />
 
                     <CollapsibleSection title="Product Details" defaultOpen>
                         <p>{product.description}</p>
