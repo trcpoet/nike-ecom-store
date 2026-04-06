@@ -7,8 +7,9 @@ import {
     type InsertProduct, type InsertVariant, type InsertProductImage,
 } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
-import { mkdirSync, existsSync, cpSync } from 'fs';
+import { readFileSync } from 'fs';
 import { join, basename } from 'path';
+import { put } from '@vercel/blob';
 type ProductRow = typeof products.$inferSelect;
 type VariantRow = typeof productVariants.$inferSelect;
 
@@ -112,11 +113,6 @@ async function seed() {
         const summer = (await db.select().from(collections).where(eq(collections.slug, 'summer-25')))[0];
         const newArrivals = (await db.select().from(collections).where(eq(collections.slug, 'new-arrivals')))[0];
 
-        const uploadsRoot = join(process.cwd(), 'static', 'uploads', 'shoes');
-        if (!existsSync(uploadsRoot)) {
-            mkdirSync(uploadsRoot, { recursive: true });
-        }
-
         const sourceDir = join(process.cwd(), 'public', 'shoes');
         const productNames = Array.from({ length: 15 }, (_, i) => `Nike Air Max ${i + 1}`);
 
@@ -179,19 +175,19 @@ async function seed() {
 
             const pickName = sourceImages[i % sourceImages.length];
             const src = join(sourceDir, pickName);
-            const destName = `${insertedProduct.id}-${basename(pickName)}`;
-            const dest = join(uploadsRoot, destName);
+            const blobName = `shoes/${insertedProduct.id}-${basename(pickName)}`;
             try {
-                cpSync(src, dest);
+                const fileBuffer = readFileSync(src);
+                const { url } = await put(blobName, fileBuffer, { access: 'public', addRandomSuffix: false });
                 const img: InsertProductImage = insertProductImageSchema.parse({
                     productId: insertedProduct.id,
-                    url: `/static/uploads/shoes/${destName}`,
+                    url,
                     sortOrder: 0,
                     isPrimary: true,
                 });
                 await db.insert(productImages).values(img);
             } catch (e) {
-                err('Failed to copy product image', { src, dest, e });
+                err('Failed to upload product image', { src, e });
             }
 
             const collectionsForProduct: { id: string }[] = Math.random() < 0.5 ? [summer] : ([newArrivals, summer].filter(Boolean) as { id: string }[]);
