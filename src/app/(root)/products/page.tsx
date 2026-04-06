@@ -4,6 +4,8 @@ import Sort from "@/components/Sort";
 import { parseFilterParams } from "@/lib/utils/query";
 import { getAllProducts } from "@/lib/actions/product";
 
+export const revalidate = 60; // re-fetch at most once per minute
+
 type SearchParams = Record<string, string | string[] | undefined>;
 
 export default async function ProductsPage({searchParams, }: {

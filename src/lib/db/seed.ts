@@ -99,6 +99,9 @@ async function seed() {
             if (!exists.length) await db.insert(collections).values(row);
         }
 
+        log('Clearing existing product data');
+        await db.delete(products);
+
         const allGenders = await db.select().from(genders);
         const allColors = await db.select().from(colors);
         const allSizes = await db.select().from(sizes);
@@ -167,7 +170,6 @@ async function seed() {
                     const created = (retV as VariantRow[])[0];
                     variantIds.push(created.id);
                     if (!defaultVariantId) defaultVariantId = created.id;
-
                 }
             }
 

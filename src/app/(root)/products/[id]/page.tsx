@@ -4,6 +4,16 @@ import { Card, CollapsibleSection, ProductGallery } from "@/components";
 import { Star } from "lucide-react";
 import ProductOptions, { type ColorVariant } from "@/components/ProductOptions";
 import { getProduct, getProductReviews, getRecommendedProducts, type Review, type RecommendedProduct } from "@/lib/actions/product";
+import { db } from "@/lib/db";
+import { products } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
+
+export const revalidate = 3600; // re-fetch at most once per hour
+
+export async function generateStaticParams() {
+    const rows = await db.select({ id: products.id }).from(products).where(eq(products.isPublished, true));
+    return rows.map((r) => ({ id: r.id }));
+}
 
 type GalleryVariant = { color: string; images: string[] };
 
@@ -114,6 +124,20 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         })
         .map((img) => img.url);
 
+    // Map variantId → colorName so images linked to any variant of a color get grouped correctly
+    const variantColorMap = new Map<string, string>();
+    for (const v of variants) variantColorMap.set(v.id, v.color?.name || "Default");
+
+    const imagesByColor = new Map<string, string[]>();
+    for (const img of images) {
+        if (!img.variantId) continue;
+        const colorName = variantColorMap.get(img.variantId);
+        if (!colorName) continue;
+        const arr = imagesByColor.get(colorName) ?? [];
+        arr.push(img.url);
+        imagesByColor.set(colorName, arr);
+    }
+
     // Build per-color variant data with per-size availability and pricing
     const colorVariantsMap = new Map<string, ColorVariant>();
     for (const v of variants) {
@@ -124,10 +148,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
         const existing = colorVariantsMap.get(colorName);
         if (!existing) {
-            const imgs = images.filter((img) => img.variantId === v.id).map((img) => img.url);
+            const imgs = imagesByColor.get(colorName) ?? fallbackImages;
             colorVariantsMap.set(colorName, {
                 color: colorName,
-                images: imgs.length ? imgs : fallbackImages,
+                images: imgs,
                 available: inStock,
                 sizes: v.size ? [{ name: v.size.name, available: inStock, sortOrder: v.size.sortOrder ?? 0, price, salePrice }] : [],
             });
