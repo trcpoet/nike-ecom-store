@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { Card, CollapsibleSection, ProductGallery, SizePicker } from "@/components";
-import { Heart, ShoppingBag, Star } from "lucide-react";
+import type { SizeOption } from "@/components/SizePicker";
+import { Heart, Star } from "lucide-react";
 import ColorSwatches from "@/components/ColorSwatches";
+import ProductActions from "@/components/ProductActions";
 import { getProduct, getProductReviews, getRecommendedProducts, type Review, type RecommendedProduct } from "@/lib/actions/product";
 
 type GalleryVariant = { color: string; images: string[] };
@@ -110,25 +112,44 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
     const { product, variants, images } = data;
 
-    const galleryVariants: GalleryVariant[] = variants.map((v) => {
-        const imgs = images
-            .filter((img) => img.variantId === v.id)
-            .map((img) => img.url);
+    const fallbackImages = images
+        .filter((img) => img.variantId === null)
+        .sort((a, b) => {
+            if (a.isPrimary && !b.isPrimary) return -1;
+            if (!a.isPrimary && b.isPrimary) return 1;
+            return (a.sortOrder ?? 0) - (b.sortOrder ?? 0);
+        })
+        .map((img) => img.url);
 
-        const fallback = images
-            .filter((img) => img.variantId === null)
-            .sort((a, b) => {
-                if (a.isPrimary && !b.isPrimary) return -1;
-                if (!a.isPrimary && b.isPrimary) return 1;
-                return (a.sortOrder ?? 0) - (b.sortOrder ?? 0);
-            })
-            .map((img) => img.url);
+    const colorMap = new Map<string, GalleryVariant>();
+    for (const v of variants) {
+        const colorName = v.color?.name || "Default";
+        if (!colorMap.has(colorName)) {
+            const imgs = images.filter((img) => img.variantId === v.id).map((img) => img.url);
+            colorMap.set(colorName, {
+                color: colorName,
+                images: imgs.length ? imgs : fallbackImages,
+            });
+        }
+    }
+    const galleryVariants: GalleryVariant[] = [...colorMap.values()].filter((gv) => gv.images.length > 0);
 
-        return {
-            color: v.color?.name || "Default",
-            images: imgs.length ? imgs : fallback,
-        };
-    }).filter((gv) => gv.images.length > 0);
+    // Build size options with stock availability (any variant with that size in stock = available)
+    const sizeStockMap = new Map<string, { available: boolean; sortOrder: number }>();
+    for (const v of variants) {
+        if (!v.size) continue;
+        const name = v.size.name;
+        const inStock = Number(v.inStock) > 0;
+        const existing = sizeStockMap.get(name);
+        if (!existing) {
+            sizeStockMap.set(name, { available: inStock, sortOrder: v.size.sortOrder ?? 0 });
+        } else if (inStock) {
+            existing.available = true;
+        }
+    }
+    const availableSizes: SizeOption[] = [...sizeStockMap.entries()]
+        .sort((a, b) => a[1].sortOrder - b[1].sortOrder)
+        .map(([name, { available }]) => ({ name, available }));
 
     const defaultVariant =
         variants.find((v) => v.id === product.defaultVariantId) || variants[0];
@@ -180,13 +201,15 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                     </div>
 
                     <ColorSwatches productId={product.id} variants={galleryVariants} />
-                    <SizePicker />
+                    <SizePicker productId={product.id} sizes={availableSizes.length ? availableSizes : undefined}  />
 
                     <div className="flex flex-col gap-3">
-                        <button className="flex items-center justify-center gap-2 rounded-full bg-dark-900 px-6 py-4 text-body-medium text-light-100 transition hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-[--color-dark-500]">
-                            <ShoppingBag className="h-5 w-5" />
-                            Add to Bag
-                        </button>
+                        <ProductActions
+                            productId={product.id}
+                            productName={product.name}
+                            price={displayPrice ?? 0}
+                            galleryVariants={galleryVariants}
+                        />
                         <button className="flex items-center justify-center gap-2 rounded-full border border-light-300 px-6 py-4 text-body-medium text-dark-900 transition hover:border-dark-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-[--color-dark-500]">
                             <Heart className="h-5 w-5" />
                             Favorite

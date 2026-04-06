@@ -171,7 +171,7 @@ export async function getAllProducts(filters: NormalizedProductFilters): Promise
 
     const page = Math.max(1, filters.page ?? 1);
     const limitInput = filters.limit ?? 6;
-    const limit = Math.max(1, Math.min(limitInput, 6));
+    const limit = Math.max(1, Math.min(limitInput, 60));
     const offset = (page - 1) * limit;
 
 
