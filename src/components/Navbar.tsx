@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCartStore } from "@/store/cart";
 
 const NAV_LINKS = [
@@ -15,7 +15,10 @@ const NAV_LINKS = [
 
 export default function Navbar() {
     const [open, setOpen] = useState(false);
+    const [mounted, setMounted] = useState(false);
     const itemCount = useCartStore((s) => s.getItemCount());
+
+    useEffect(() => setMounted(true), []);
 
     return (
         <header className="sticky top-0 z-50 bg-light-100">
@@ -45,7 +48,7 @@ export default function Navbar() {
                         Search
                     </button>
                     <Link href="/cart" className="text-body text-dark-900 transition-colors hover:text-dark-700">
-                        My Cart {itemCount > 0 && `(${itemCount})`}
+                        My Cart {mounted && itemCount > 0 && `(${itemCount})`}
                     </Link>
                 </div>
 
@@ -82,7 +85,7 @@ export default function Navbar() {
                     <li className="flex items-center justify-between pt-2">
                         <button className="text-body">Search</button>
                         <Link href="/cart" className="text-body" onClick={() => setOpen(false)}>
-                            My Cart {itemCount > 0 && `(${itemCount})`}
+                            My Cart {mounted && itemCount > 0 && `(${itemCount})`}
                         </Link>
                     </li>
                 </ul>

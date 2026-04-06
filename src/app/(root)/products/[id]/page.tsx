@@ -7,7 +7,7 @@ import ColorSwatches from "@/components/ColorSwatches";
 import ProductActions from "@/components/ProductActions";
 import { getProduct, getProductReviews, getRecommendedProducts, type Review, type RecommendedProduct } from "@/lib/actions/product";
 
-type GalleryVariant = { color: string; images: string[] };
+type GalleryVariant = { color: string; images: string[]; available: boolean };
 
 function formatPrice(price: number | null | undefined) {
     if (price === null || price === undefined) return undefined;
@@ -124,12 +124,17 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     const colorMap = new Map<string, GalleryVariant>();
     for (const v of variants) {
         const colorName = v.color?.name || "Default";
-        if (!colorMap.has(colorName)) {
+        const inStock = Number(v.inStock) > 0;
+        const existing = colorMap.get(colorName);
+        if (!existing) {
             const imgs = images.filter((img) => img.variantId === v.id).map((img) => img.url);
             colorMap.set(colorName, {
                 color: colorName,
                 images: imgs.length ? imgs : fallbackImages,
+                available: inStock,
             });
+        } else if (inStock) {
+            existing.available = true;
         }
     }
     const galleryVariants: GalleryVariant[] = [...colorMap.values()].filter((gv) => gv.images.length > 0);
